@@ -1,4 +1,5 @@
 # Dev workspace — internal docs not for production repo
+dev/
 resume-tailor-agent-spec.md
 resume-engine-spec.md
 tasks.md
@@ -20,6 +21,8 @@ profile-config.md
 inputs/*
 !inputs/.gitkeep
 !inputs/paths.example.yaml
+!inputs/profile-config.example.md
+!inputs/profile.example.json
 !inputs/resume-examples/
 !inputs/cover-letter-examples/
 inputs/resume-examples/*
@@ -38,7 +41,16 @@ desktop.ini
 # Per-job artifacts written outside outputs/ (default name when a JD is pasted)
 resume-agent-output_*/
 job-applications/
+
+# /scrape output, when it is run from inside the repo rather than elsewhere.
+# tailored-jobs_* holds real applications; job-search_* is a disposable view.
+tailored-jobs_*/
+job-search_*/
 *.pdf
 
 # Local test runs (personal JDs + outputs) — never commit
 test/
+
+# Python bytecode (scripts/ import each other)
+__pycache__/
+*.pyc

@@ -1,28 +1,28 @@
 ---
-name: resume-engine-setup
-description: Bootstrap or upgrade the resume-tailor-agent binaries (the open-ATS scorer and the Tectonic LaTeX compiler) on a new machine. Use when setting up the resume engine for the first time, when /tailor halts reporting a missing tool or tectonic binary, or when the user asks to update the resume engine toolchain.
+name: ijob-setup
+description: Bootstrap or upgrade the resume-tailor-agent binaries (the open-ATS scorer and the Tectonic LaTeX compiler) on a new machine. Use when setting up the resume engine for the first time, when /ijob-tailor halts reporting a missing tool or tectonic binary, or when the user asks to update the resume engine toolchain.
 ---
 
-# /resume-engine-setup — bootstrap engine binaries
+# /ijob-setup — bootstrap engine binaries
 
 Fetches `tool` (the open-ATS scorer) and `tectonic` (LaTeX compiler) into the engine repo. Idempotent — re-running upgrades to newest stable.
 
-## 1. Resolve the engine root
+## Resolve the engine root
 
 ```bash
 ENGINE="__ENGINE_PATH__"   # rewritten by install.sh
 cd "$ENGINE" || { echo "Engine repo not found at $ENGINE"; exit 1; }
 ```
 
-`install.sh` rewrites that path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — fall back to `$RESUME_TAILOR_HOME`, then `$HOME/soft/resume-tailor-agent`.
+`install.sh` rewrites that path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
-**`cd "$ENGINE"` is required, not optional.** Every recipe in `skills/resume-engine-setup/SKILL.md` is written relative to the current directory (`curl -o tool`, `tar -xzf`, "keep the binary at repo root"). Run from anywhere else and you download a 110 MB binary into the user's working directory, then fail the verify step.
+**`cd "$ENGINE"` is required, not optional.** Every recipe in `skills/ijob-setup/SKILL.md` is written relative to the current directory (`curl -o tool`, `tar -xzf`, "keep the binary at repo root"). Run from anywhere else and you download a 110 MB binary into the user's working directory, then fail the verify step.
 
 Both binaries are gitignored, so they must be fetched per machine.
 
-## 2. Bootstrap procedure
+## Bootstrap procedure
 
-> Invoked as `/resume-engine-setup`. Older docs call this `/setup`; the playbook is the same.
+> Invoked as `/ijob-setup`. Older docs call this `/setup`; the playbook is the same.
 
 Fetches latest stable `tool` (ATS scorer) and `tectonic` (LaTeX compiler) for the current OS+arch. Idempotent — re-running upgrades to newest stable.
 
@@ -100,7 +100,7 @@ Delete the downloaded archive.
 
 ## 4a. Per-OS shell recipe
 
-Pick exactly one block based on §1 detection. Substitute `<TOOL_TAG>` (e.g., `v0.2.0`), `<TECTONIC_TAG>` (e.g., `tectonic@0.16.9`), `<TECTONIC_VER>` (e.g., `0.16.9`) from §2.
+Pick exactly one block based on the §1 (Detect OS + arch) result. Substitute `<TOOL_TAG>` (e.g., `v0.2.0`), `<TECTONIC_TAG>` (e.g., `tectonic@0.16.9`), `<TECTONIC_VER>` (e.g., `0.16.9`) from §2 (Resolve latest stable tag). The two unnumbered sections above are preamble; §1–§7 are the procedure.
 
 ### Windows x86_64 (run from repo root, any shell — examples in pwsh)
 
@@ -199,7 +199,7 @@ tectonic  0.16.9   ./tectonic.exe   OK
 
 ## Re-run behavior
 
-`/resume-engine-setup` always queries latest stable. If a newer tag exists than the local binary's `--version`, re-download. Otherwise no-op with "already up to date".
+`/ijob-setup` always queries latest stable. If a newer tag exists than the local binary's `--version`, re-download. Otherwise no-op with "already up to date".
 
 ## Failure modes
 

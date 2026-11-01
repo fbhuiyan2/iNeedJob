@@ -12,53 +12,239 @@
 
 **[Try the underlying scorer in your browser →](https://open-ats-site.pages.dev/)** &nbsp;·&nbsp; **[CLI scorer source](https://github.com/NoahMustafa/open-ATS)**
 
-A derivative of **[NoahMustafa/open-resume-agent](https://github.com/NoahMustafa/open-resume-agent)**, created and modified by **Fakhrul Hasan Bhuiyan**.
+By **Fakhrul Hasan Bhuiyan**.
 
 </div>
 
 ---
 
-Drop a job description into chat. Get back a one-page, ATS-safe PDF tailored to it, plus a gap report telling you exactly which requirements your profile doesn't actually meet. The engine refuses to invent experience you don't have — if you're underqualified, it ships an honest score and tells you why, instead of stuffing buzzwords into a bullet.
+> **Interviewer:** So, why do you want this position?
+>
+> **Me:** I Need Job
 
-The repo is plain Markdown playbooks + a LaTeX template. Your agent (Claude Code, OpenCode, Cursor, etc.) reads the playbooks and shells out to two bundled binaries (`tool` for ATS scoring, `tectonic` for LaTeX). One profile file is the source of truth for every résumé this engine ever produces.
+Find the jobs. Tailor a résumé to each one. Get an honest report of where you fall short.
+
+Drop a job description into chat and get back a one-page, ATS-safe PDF tailored to it, plus a gap report naming the requirements your profile doesn't actually meet. The engine refuses to invent experience you don't have — if you're underqualified it ships an honest score and says why, instead of stuffing buzzwords into a bullet. Optionally, it finds the postings for you too.
+
+The repo is plain Markdown playbooks plus a LaTeX template. Your agent — Claude Code, OpenCode, Cursor, whichever — reads the playbooks and shells out to two bundled binaries (`tool` for ATS scoring, `tectonic` for LaTeX). One profile file is the source of truth for every résumé this engine ever produces.
 
 ---
 
-## Quick start
+## Getting started — the whole thing, start to finish
 
-```sh
-# 1. Clone, then install the slash commands (once per machine):
-git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
-bash ~/soft/resume-tailor-agent/skills/install.sh
+Five steps. Steps 1 and 2 happen once per machine, step 3 once per person, and steps 4–5 are the loop you actually live in.
 
-# 2. Then in chat, from ANY directory:
-/resume-engine-setup    # one time per machine — fetches tool + tectonic
-/profile-build          # one time per person — builds profile.json
-/tailor                 # per job — paste JD or give a path
+### 1. Use an agent
+
+That is the whole installation instruction. This repo is a playbook *for* an
+agent — there is nothing to install by hand and no build step to run.
+
+Start a session in any harness (Claude Code, OpenCode, Codex, Cursor, …), in any
+directory, and say:
+
+> `https://github.com/fbhuiyan2/resume-tailor-agent` — clone this repo and set it up for me
+
+It reads [`AGENTS.md`](AGENTS.md) and does the rest:
+
+```
+Cloned to ~/soft/resume-tailor-agent
+
+Installing skills -> ~/.claude/skills
+  /ijob-setup  /ijob-profile  /ijob-tailor  /ijob-scrape  /ijob-shortlist
+Installing skills -> ~/.codex/skills
+  …and every other harness directory found under $HOME
+
+Engine path baked in: /home/you/soft/resume-tailor-agent
+
+Fetching binaries…
+  tool      14 MB  ✓   (ATS scorer)
+  tectonic  52 MB  ✓   (LaTeX compiler)
+
+Setup done. Next: /ijob-profile to build your profile.
 ```
 
-Three slash commands, one self-contained `SKILL.md` each. The installer copies them into `~/.claude/skills/`, which both Claude Code and OpenCode read, so they work from any directory. Full setup guide, including the OpenCode command shims: **[How-To-Setup.md](How-To-Setup.md)**.
+Under the hood it copies each playbook into every agent-harness skills directory
+it finds under `$HOME`, baking the clone's absolute path into each copy so the
+commands work from any directory, in whichever harness you use.
+
+> **Restart your harness once it finishes.** The slash commands won't appear
+> until you do. That is never a blocker — the playbooks are plain Markdown, so
+> an agent can read them straight from the clone and follow them as written.
+
+### 2. Build your profile
+
+```
+/ijob-profile
+```
+
+Point it at a CV and it does the rest — parses it, offers to pull in your public GitHub repos, asks only where something is genuinely ambiguous:
+
+```
+Reading inputs/cv.pdf … 14 positions, 23 publications, 9 projects
+GitHub @you … 31 public repos, 6 look substantial. Include them? → yes
+
+Two things I couldn't infer:
+  1. "Parsl workflow orchestration" — expert, working, or familiar?
+  2. Which reference should be the default on a one-page résumé?
+
+Wrote inputs/profile.json — 9 projects, 23 publications, 61 tagged bullets.
+```
+
+Then it offers to set up your job-search defaults — the titles you want, the places, and anything to rule out. Take the defaults and tweak later, or answer five questions now. Either way it writes `inputs/search-prefs.json`.
+
+Everything personal lives in `inputs/`, which is gitignored. Nothing about you is ever committed.
+
+### 3. Add a job source — only if you want the job-finding half
+
+Skip this if you'll bring your own job descriptions. Otherwise you need one free API key: see **[docs/scrape-source-setup.md](docs/scrape-source-setup.md)** for the signup walkthrough. No credit card, no paid tier.
+
+### 4. Find jobs
+
+```
+/ijob-scrape  find me computational materials jobs at national labs,
+              posted this month, nothing needing a clearance
+```
+
+It shows you what it's about to spend before spending it:
+
+```
+0 postings held · discovery on (3 sources) · ranking against inputs/profile.json
+
+Searching for:
+  Positions   computational materials scientist · ML research scientist
+  Where       Illinois · remote or hybrid
+  Excluding   postings stating clearance or export-control requirements
+  Queries     3 requests of your 200 remaining on JSearch
+Go ahead? → yes
+
+JSearch 31 · LinkedIn 18 · Indeed 9 · 58 new, 0 already held
+
+ #  Employer                     Title                               Where       Posted  Fit
+ 1  Argonne National Laboratory  Postdoc – ML Interatomic Potentials  Lemont IL   3d      .104
+ 2  SES AI                       Computational Materials Scientist    Boston·hyb  6d      .092
+ 3  Oak Ridge National Lab       Computational Scientist, Materials   Oak Ridge   8d      .088
+ …
+58 in the corpus · 41 matched your filters · 23 after keywords · 4 hidden by
+your saved filters · showing 23
+
+How many do you want to work through?
+```
+
+### 5. Get the tailored documents
+
+> rows 1–12
+
+```
+12 folders ready in job-applications_20261023/. 1 page, cover letter, target ATS 85.
+Say if you want something different — otherwise I'll start. → go
+
+[ 1/12] Argonne · Postdoc ML Interatomic Potentials … ATS 100, JD 71, 1pp ✓
+[ 2/12] Oak Ridge · Computational Scientist, Materials … ATS 100, JD 68, 1pp ✓
+[ 3/12] SES AI · Computational Materials Scientist … posting body was never
+        captured — skipped rather than tailoring against a job title alone
+…
+Shipped 11 of 12.
+
+Strongest fits: Argonne (71), Oak Ridge (68), NREL (66)
+Gap that repeated across 7 of them: no production Kubernetes experience.
+```
+
+Each folder holds `resume.pdf`, `cover-letter.pdf`, the full posting with its apply URL, and a gap report. You apply — this engine never submits anything on your behalf.
+
+**That's the loop.** After the first week your corpus has a few hundred postings in it, and `/ijob-shortlist` re-ranks them for free, as often as you like:
+
+```
+/ijob-shortlist  anything remote I haven't looked at yet, last two weeks
+
+9,412 postings held · selection only, nothing fetched
+284 matched your filters · 61 after keywords · showing 25
+```
 
 ---
 
-## What you get per `/tailor` run
+## The five commands
+
+| | What it's for | How often |
+|---|---|---|
+| **`/ijob-setup`** | Fetches the two binaries. Detects your OS and arch, verifies, gitignores. | once per machine |
+| **`/ijob-profile`** | Builds `profile.json` from your CV and GitHub, plus your search defaults. Re-run it when you finish a project — it diffs and confirms, never silently deletes. | once, then occasionally |
+| **`/ijob-tailor`** | A job description in, a tailored PDF and a gap report out. Takes a pasted JD, a file path, a URL, several URLs, or a folder `/ijob-scrape` prepared. | per job, or per batch |
+| **`/ijob-scrape`** | Finds postings, stores them locally, ranks them against your profile, hands the ones you pick to `/ijob-tailor`. Costs metered quota. | once or twice a day |
+| **`/ijob-shortlist`** | The same narrowing and ranking, with discovery switched off. Touches no network, costs nothing. | as often as you like |
+
+`/ijob-scrape` and `/ijob-shortlist` need `python3` on your PATH. `/ijob-tailor` needs it too, but only to fetch a posting from a URL (`scripts/fetch_posting.py`); tailoring a JD you paste or hand it as a file needs no Python.
+
+---
+
+## You don't have to remember any flags
+
+These are playbooks an agent reads, not command parsers. Plain language does the same work, and the two mix freely in one line:
+
+```
+/ijob-tailor two pages, research layout, no cover letter
+/ijob-tailor ~/jobs/alcf.txt keep it to one page and give me three references
+/ijob-tailor <paste a JD> cover letter too, cap it at one page
+/ijob-scrape  anything at Argonne or Fermilab, posted this week
+/ijob-shortlist  show me the remote ones again, but drop anything needing citizenship
+```
+
+The flags below exist so you can see **what the playbooks actually know how to do**. Treat them as a capability list, not syntax to memorise — say any of it in your own words and the agent maps it.
+
+<details>
+<summary><strong>What <code>/ijob-tailor</code> can vary</strong></summary>
+
+| Capability | Flag, if you want it | Default |
+|---|---|---|
+| Page budget — a hard block, never exceeded | `--pages N` | 1 |
+| Which layout | `--template X` | picked from the page budget |
+| How many references to print | `--ref N` | 1, or 0 on layouts without a References section |
+| Cover letter on or off, decided up front | `--cover` / `--no-cover` | it asks once, before any work starts |
+| Cover letter layout and length cap | `--cl-template X`, `--cl-pages N` | `cover-letter`, no cap |
+| Letter and outreach only, no résumé | `--cl-only` | off |
+| ATS-readiness floor (formatting only) | `--target N` | 85 |
+
+Layout names resolve against your own `resume_template` map first, then [`templates/`](templates/). If a name is ambiguous the agent asks and lists the options rather than quietly defaulting, and it echoes what it resolved before writing: *"2 pages, layout `2page`, 1 reference, cover letter on."*
+
+</details>
+
+<details>
+<summary><strong>What <code>/ijob-scrape</code> and <code>/ijob-shortlist</code> can narrow by</strong></summary>
+
+| Capability | Flag, if you want it |
+|---|---|
+| Remote, hybrid, on-site | `--work-mode remote,hybrid` |
+| State, country, or a city | `--state IL` · `--country US` · `--location chicago` |
+| Kind of role | `--role postdoc,research,faculty,engineering,…` |
+| Kind of employer | `--sector national_lab,university,company,…` |
+| A named employer | `--employer argonne` |
+| How recent | `--since 30` |
+| Keywords it must mention, or must not | `--kw "machine learning"` · `--not lecturer` |
+| Work-authorisation requirements the posting states | `--auth-exclude citizen,clearance,no_visa_sponsor,…` |
+| Exclusions | `--state-exclude TX` · `--employer-exclude X` · `--not-title lecturer` |
+| How many to show | `--limit 25` |
+
+**The work-authorisation filters never reach a job site.** They are applied on your machine after results come back. The agent is also forbidden from asking you about your citizenship or visa status — the questions are phrased as filters on postings, and the answers live in `search-prefs.json`, never in your résumé profile.
+
+</details>
+
+---
+
+## What you get per job
 
 ```
 <output folder>/
-├── resume.tex            # tailored LaTeX
-├── resume.pdf            # compiled, ATS-safe, within the --pages budget
-├── resume.md             # tool --md snapshot (structural verify oracle)
-├── score.json            # ATS readiness + JD-match breakdown
-├── jd.txt                # JD snapshot
-├── jd.meta.json          # company, role, location, source
+├── resume.pdf            # ATS-safe, within the page budget
+├── resume.tex            # the LaTeX it was built from
 ├── recommendations.md    # gap report (always) + cover letter & outreach (opt-in)
-├── cover-letter.tex/.pdf # only when a letter was written
-└── run.json              # selected modules, iteration history, what shipped + why
+├── cover-letter.pdf      # only when a letter was written
+├── score.json            # ATS readiness + JD-match breakdown
+├── job-info.md           # the full posting and its apply URL — from /ijob-scrape
+└── run.json              # what shipped, and why
 ```
 
-**Where it lands:** next to the JD file if you gave a path, otherwise `./resume-agent-output_{company}-{role}/` in the current directory. Set `output_root` in `inputs/paths.yaml` (or `$RESUME_TAILOR_OUT`) to force a single root, and the run goes to `{output_root}/{company-slug}/{role-slug}-{YYYYMMDD}/`. Never inside the engine repo.
+**Where it lands:** next to the JD file if you gave a path, in the batch folder if it came from `/ijob-scrape`, otherwise `./resume-agent-output_{company}-{role}/`. Set `output_root` in `inputs/paths.yaml` to force a single root. Never inside the engine repo.
 
-Each ships only after passing an ATS structural verify and a coverable-gap check: anything the posting asks for that the profile genuinely supports must appear in the resume before it ships. The JD-match *score* is reported, never gated — a low one usually means the profile lacks the experience, and no rewrite fixes that honestly. When a gap can't be closed, the engine ships the best attempt and writes the unresolved gaps to `recommendations.md` rather than lying.
+Each one ships only after passing an ATS structural verify and a coverable-gap check: anything the posting asks for that your profile genuinely supports must appear before it ships. The JD-match *score* is reported, never gated — a low one usually means the profile lacks the experience, and no rewrite fixes that honestly. When a gap can't be closed the engine ships the best attempt and writes the unresolved gaps to `recommendations.md` rather than lying.
 
 ---
 
@@ -66,102 +252,101 @@ Each ships only after passing an ATS structural verify and a coverable-gap check
 
 | | |
 |---|---|
-| Harness | Any agentic LLM tool with file + shell access (Claude Code, OpenCode, Cursor, Aider, etc.) |
-| OS | Windows 10+ (x86_64), macOS (arm64), Linux (x86_64 / arm64). See [`skills/resume-engine-setup/SKILL.md`](skills/resume-engine-setup/SKILL.md) for the build-from-source path on other arches. |
-| Disk | ~150 MB after `/resume-engine-setup` (`tool` + `tectonic` + LaTeX package cache) |
-| Network | First `/resume-engine-setup` only (GitHub releases). Tectonic caches LaTeX packages on first compile, then offline. |
-| Account | Optional. A GitHub username (read-only, unauthenticated) lets `/profile-build` scrape your public repos; it works without one. |
+| Harness | Any agentic LLM tool with file + shell access (Claude Code, OpenCode, Cursor, Aider, …) |
+| OS | Windows 10+ (x86_64), macOS (arm64), Linux (x86_64 / arm64). Other arches: build from source, see [`skills/ijob-setup/SKILL.md`](skills/ijob-setup/SKILL.md). |
+| Disk | ~150 MB after `/ijob-setup` |
+| Network | `/ijob-setup` to fetch the binaries, Tectonic's one-time LaTeX package cache on first compile, and thereafter only what you ask for: fetching a posting from a URL, a job search, or reading a public GitHub profile during `/ijob-profile`. A paste-in tailoring run after setup needs none. |
+| Python | `/ijob-scrape` and `/ijob-shortlist` always; `/ijob-tailor` only to fetch a posting from a URL. Standard library, nothing to install |
+| Accounts | All optional. A GitHub username helps `/ijob-profile`; one free API key enables job discovery. |
 
-No Docker. No Node. No Bun. No Python. The two binaries are self-contained.
+No Docker, no Node, no build step. The two binaries are self-contained.
 
 ---
 
-## Slash commands
+## Disclaimer
 
-### `/resume-engine-setup` — bootstrap binaries
-Detects OS + arch, queries GitHub releases for latest stable `tool` (ATS scorer at [NoahMustafa/open-ATS](https://github.com/NoahMustafa/open-ATS)) and `tectonic` (LaTeX compiler), downloads with `curl`, verifies, gitignores. Idempotent.
+This software is provided "as is", without warranty of any kind, under the terms of the [LICENSE](LICENSE). Neither the repository nor its authors or contributors are responsible for how it is used or modified, for any breach of a third party's terms of service arising from that use, or for any consequence of it.
 
-Playbook: [`skills/resume-engine-setup/SKILL.md`](skills/resume-engine-setup/SKILL.md)
+Most sources `/ijob-scrape` can use are sanctioned — public APIs, first-party keys, or vendors that do the collection on their own infrastructure. Two are not: the optional JobSpy scrapers for Indeed and LinkedIn, which run from your machine on your IP and are **off by default**. Each is enabled only by an explicit, per-site opt-in taken after reading the warning the `enable` command prints. Whether to enable them, and the consequences of doing so, are yours alone. Nothing here is legal advice.
 
-### `/profile-build` — build or update profile.json
-Cold start: parses a CV (via `tool cv.pdf --md`), fetches your GitHub repos, asks which to include, asks clarifying questions only where ambiguous, writes `inputs/profile.json` (gitignored — it has personal data). Schema: [`profile.example.json`](profile.example.json). To keep the profile outside the repo so it syncs across machines, set `profile:` in `inputs/paths.yaml`.
+---
 
-Update mode: re-running adds and edits, never silent-deletes. Shows a diff, confirms once.
+## Non-negotiables
 
-Inputs (all optional, all in `inputs/`, contents gitignored):
-- `inputs/cv.pdf` or `inputs/cv.docx` — existing résumé
-- `inputs/github_username.txt` — single-line GitHub handle (or asked at runtime)
-- `inputs/notes.md` — free-form additions / corrections
-- `inputs/resume-examples/` and `inputs/cover-letter-examples/` — previous documents of yours, read before each tailoring pass as **style** guidance (tone, section shape, bullet rhythm), never as a content source. PDF, DOCX, TXT, or MD.
-- `inputs/paths.yaml` — optional per-machine path overrides; see `inputs/paths.example.yaml`
+1. **No fabrication.** Every claim on the PDF traces back to `profile.json`. If a JD demands experience that isn't in your profile, it goes to the gap report — never into a bullet.
+2. **Accept gate.** A PDF ships only after structural verify (sections and reading order derived from the chosen template, contact recoverable, within the page budget), zero ATS failures, and every profile-coverable gap closed. On honest stuck, it ships the best attempt and logs what's unresolved.
+3. **Humanizer at write time.** Every line you read passes through [`references/blacklist.md`](references/blacklist.md) — no em-dash punctuation, no "leverage", no chatbot ceremony. Longer prose also follows [`references/writing-style.md`](references/writing-style.md).
+4. **Profile is the source of truth.** Stale profile, stale tailoring. Re-run `/ijob-profile` when you finish something new.
+5. **Nothing is applied to on your behalf.** The engine produces documents and an apply URL. A human applies. There is no autosubmit and there will not be one.
 
-Playbook: [`skills/profile-build/SKILL.md`](skills/profile-build/SKILL.md)
+---
 
-### `/tailor` — JD → tailored PDF + recommendations
-End-to-end per-job flow. Non-interactive except one question, asked **up front** before any work starts: whether you want a cover letter and outreach draft. Pass `--cover` or `--no-cover` and it is not asked at all.
+## Does it actually work
 
-**JD intake — two ways:**
-- **Paste** — drop the JD into chat between triple-backticks or quotes.
-- **File path** — save it to a `.txt` anywhere (e.g. `inputs/jd.txt`) and give the path.
+| Role tested | Field | ATS | JD match | Verdict |
+|---|---|---|---|---|
+| Junior Data Developer | tech, strong fit | 100/100 | 57/100 | ceiling = sector + startup-history gaps |
+| Data Engineer (mid) | tech, strong fit | 100/100 | 72/100 | ceiling = Azure / AWS / LLM-RAG gaps |
+| Data Quality Engineer | tech, niche stack | 100/100 | 77/100 | ceiling = Azure Databricks / PySpark / SAP gaps |
+| Senior Data Engineer | tech, junior profile | 100/100 | 58/100 | flagged "don't apply at this level" |
+| Junior Accountant | non-tech, no fit | 100/100 | 45/100 | refused to fabricate; 28% on real financial work |
 
-`/tailor` sniffs which one it got. The rest is automatic: module selection → tailoring pass → compile → structural verify → score → repair loop → recommendations → output folder.
+Scores scale with real qualification, not iteration count. ATS readiness is 100/100 across all of them — the formatting engine is solid regardless of fit. External validation: a strong-fit run hit **100% on Jobscan** and **92% on MyCVCreator**; the bundled scorer is stricter than both.
 
-Flags:
-- `/tailor --pages N` — page budget (default 1). It also selects the layout when you don't name one: 1 page → `resume`, 2+ → `resume-2page`.
-- `/tailor --template X` — layout to use. A name you configured in `resume_template`, a name in [`templates/`](templates/), or any path. Templates define their own sections and order — see [`templates/README.md`](templates/README.md).
-- `/tailor --ref N` — how many references to print, for templates that have a References section (`resume-2page` does, `resume` does not). Default 1, the one flagged `"default": true` in the profile. `--ref 0` drops the section; `--ref N>1` asks which ones.
-- `/tailor --cl-template X` — cover letter layout (default `cover-letter`).
-- `/tailor --cl-pages N` — hard page cap for the cover letter. Unset by default; length follows the style examples in `inputs/cover-letter-examples/`.
-- `/tailor --cl-only` — cover letter and outreach only, no resume. Note this path skips the ATS accept gate entirely.
-- `/tailor --cover` — write cover letter + outreach unconditionally; skips the up-front ask.
-- `/tailor --no-cover` — gap report only; skips the up-front ask.
-- `/tailor --target 90` — raise the ATS-readiness floor (default 85). Formatting only; it does not raise the JD-fit bar, which is never gated.
+---
 
-> **The flags are optional.** `/tailor` is a playbook an agent reads, not a command parser, so plain language does the same work — and the two mix freely in one line.
->
-> ```
-> /tailor --pages 2 use the 2 page template
-> /tailor two pages, research layout, no cover letter
-> /tailor ~/jobs/alcf.txt keep it to one page and give me three references
-> /tailor <paste JD> cover letter too, cap it at one page
-> /tailor ~/jobs/alcf.txt cover letter only, no resume
-> ```
->
-> Layout names are matched against your `resume_template` map first, then against `templates/`. If a name is ambiguous or matches nothing, the agent asks and lists the options instead of quietly using the default — and it echoes what it resolved before writing anything: *"2 pages, layout `2page` (resume-2page-blue.tex.tmpl), 1 reference, cover letter on."*
+## Where to read more
 
-Playbook: [`skills/tailor/SKILL.md`](skills/tailor/SKILL.md)
+**If you're using it:**
+
+| | |
+|---|---|
+| [docs/scrape-source-setup.md](docs/scrape-source-setup.md) | Getting the free API keys, what each source is good at, what was rejected and why |
+| [templates/README.md](templates/README.md) | Writing your own layout, and the ATS rules any template must follow |
+| [docs/tool.md](docs/tool.md) | The bundled ATS scorer's own documentation |
+
+**If you're pointing an agent at it, or changing it:**
+
+| | |
+|---|---|
+| [AGENTS.md](AGENTS.md) | The agent-facing entry point — what "clone this and set it up" means, and the rules for working on the repo |
+| [docs/how-to-setup.md](docs/how-to-setup.md) | The long-form install reference an agent follows: portable paths, a second machine, a private profile repo, environment variables, troubleshooting |
+| [`skills/*/SKILL.md`](skills/) | The actual programs. Each is self-contained and readable straight from the clone |
+| [`references/`](references/) | The writing rules the tailoring pass reads — verb bank, humanizer blacklist, prose voice |
+| [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Contributing, reporting a vulnerability, behaving like a person |
 
 ---
 
 ## Architecture
 
 ```
- ┌──────────────────────────────────┐
- │ User: copies JD from job site    │   any browser, no extension.
- │ → pastes into chat OR saves      │
- │   to a .txt file with the path   │
- └────────────────┬─────────────────┘
-                  │
-                  ▼
- ┌────────────────────────────────────────────────────────────┐
- │  HARNESS — any agentic LLM tool                             │
- │  (reads skills/*/SKILL.md, then:)                           │
- │    1. load profile.json (or run /profile-build first)       │
- │    2. read JD (path or raw text)                            │
- │    3. select relevant modules by tag overlap + LLM judgment │
- │    4. write resume.tex from templates/resume.tex.tmpl       │
- │    5. shell: tectonic resume.tex → resume.pdf               │
- │    6. shell: ./tool resume.pdf --md → structural verify     │
- │    7. shell: ./tool resume.pdf --jd jd.txt --json → score   │
- │    8. accept-gate? no → targeted edit → goto 5              │
- │    9. write recommendations.md (gap report + opt-in extras) │
- │   10. write the output folder (next to the JD, or ./…)      │
- └─────────────────────────────────────────────────────────────┘
+  /ijob-scrape ──┐                                        metered
+                 ├──► ranked shortlist ──► you pick N ──► /ijob-tailor ──► PDFs
+  /ijob-shortlist┘                                        free
+         │                                                      │
+         └── local SQLite corpus: every posting ever seen,       └── profile.json
+             with its body, so re-ranking never re-fetches           is the only
+                                                                     content source
 ```
 
-No daemon. No background loop. One invocation per job.
+Inside one tailoring run:
 
-**Why this shape:** the agent IS the engine. No glue code, no orchestration framework — the Markdown playbook is the program, the agent is the runtime. Same playbooks work in any harness.
+```
+ ┌───────────────────────────────────────────────────────────────┐
+ │  HARNESS — any agentic LLM tool, reading skills/*/SKILL.md     │
+ │    1. load profile.json                                        │
+ │    2. read the JD (path, URL, paste, or prepared folder)       │
+ │    3. select relevant modules by tag overlap + judgment        │
+ │    4. write resume.tex from the chosen template                │
+ │    5. tectonic resume.tex → resume.pdf                         │
+ │    6. tool resume.pdf --md → structural verify                 │
+ │    7. tool resume.pdf --jd jd.txt --json → score               │
+ │    8. accept gate? no → targeted edit → back to 5              │
+ │    9. write recommendations.md (gap report + opt-in extras)    │
+ └───────────────────────────────────────────────────────────────┘
+```
+
+No daemon, no background loop, no orchestration framework. **The agent is the engine** — the Markdown playbook is the program and the agent is the runtime, which is why the same playbooks work in any harness.
 
 ---
 
@@ -169,113 +354,79 @@ No daemon. No background loop. One invocation per job.
 
 ```
 resume-tailor-agent/
-├── README.md                  # this file
-├── LICENSE                    # MIT
-├── CONTRIBUTING.md            # how to contribute
-├── CODE_OF_CONDUCT.md
-├── SECURITY.md
-├── TOOL-README.md             # bundled ATS scorer's own README
+├── README.md                       # user-facing — this file
+├── AGENTS.md · CLAUDE.md           # agent-facing entry point
 │
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.yml
-│   │   ├── feature_request.yml
-│   │   └── config.yml
-│   └── PULL_REQUEST_TEMPLATE.md
+├── skills/                         # one self-contained SKILL.md per command
+│   ├── ijob-tailor/      ijob-profile/     ijob-setup/
+│   ├── ijob-scrape/      ijob-shortlist/
+│   └── install.sh                  # installs them into every harness found
 │
-├── How-To-Setup.md            # portable install: any directory, Claude Code + OpenCode
+├── scripts/                        # stdlib-only Python behind /ijob-scrape
+│   ├── jobstore.py                 # the SQLite corpus: store, filter, rank, brief
+│   ├── search_own.py               # the metered APIs
+│   ├── search_jobspy.py            # the opt-in scrapers, off by default
+│   ├── fetch_posting.py            # one URL → one posting folder
+│   ├── profile_pdf.py              # the whole profile → one PDF, for scoring
+│   └── score_fit.py                # requirement coverage, and the shortlist floor
 │
-├── skills/                    # one self-contained SKILL.md per command
-│   ├── tailor/SKILL.md
-│   ├── profile-build/SKILL.md
-│   ├── resume-engine-setup/SKILL.md
-│   └── install.sh             # installs them into ~/.claude/skills/
+├── templates/                      # example layouts — copy and edit, none required
+│   ├── README.md                   # how to write your own + the ATS rules
+│   ├── resume.tex.tmpl             # default, one page
+│   ├── resume-2page.tex.tmpl       # longer form, References last
+│   └── cover-letter.tex.tmpl
 │
-├── templates/                 # example layouts — copy and edit, none is required
-│   ├── README.md              # how to write your own + the ATS rules any template must follow
-│   ├── resume.tex.tmpl        # default, one page, industry flavoured
-│   ├── resume-2page.tex.tmpl  # longer form, research flavoured, References last
-│   └── cover-letter.tex.tmpl  # moderncv cover letter
+├── references/                     # rules read by the tailoring pass
+│   ├── verb-bank.md  blacklist.md  writing-style.md
 │
-├── references/                # rules read by the tailoring pass
-│   ├── verb-bank.md           # action verbs grouped by intent + banned openers
-│   ├── blacklist.md           # humanizer ruleset (no AI filler, etc.)
-│   └── writing-style.md       # prose voice: sentences, tense, acronyms, terminology
+├── docs/                           # the three guides you read once
+│   ├── how-to-setup.md             # agent-facing install reference
+│   ├── scrape-source-setup.md      # getting the free API keys
+│   └── tool.md                     # the bundled ATS scorer's own docs
 │
-├── profile.example.json       # schema reference (checked in)
-├── profile-config.example.md  # template for derived-mode profiles (see /profile-build)
-├── job_description_template.txt   # sample JD shape
+├── inputs/                         # everything personal — contents gitignored
+│   ├── profile.json                # your profile
+│   ├── search-prefs.json           # your job-search defaults
+│   ├── scrape/jobs.db              # the posting corpus
+│   ├── secrets.env                 # API keys, chmod 600, never committed
+│   ├── resume-examples/  cover-letter-examples/   # read as STYLE, never content
+│   └── *.example.*                 # the only tracked files here — copy one,
+│                                   #   drop ".example", edit your copy
 │
-├── inputs/                    # everything personal (contents gitignored)
-│   ├── profile.json           # YOUR profile — default location
-│   ├── profile-config.md      # optional; switches /profile-build to derived mode
-│   ├── paths.example.yaml     # copy to paths.yaml to point anything elsewhere
-│   ├── resume-examples/       # drop previous resumes here — read as STYLE guidance
-│   └── cover-letter-examples/ # same, for letters
-├── tool[.exe]                 # fetched by /resume-engine-setup (gitignored)
-└── tectonic[.exe]             # fetched by /resume-engine-setup (gitignored)
+└── tool[.exe]  tectonic[.exe]      # fetched by /ijob-setup, gitignored
 ```
-
----
-
-## Non-negotiables
-
-1. **No fabrication.** Every claim on the PDF traces back to `profile.json`. If a JD demands experience that isn't in your profile, it goes to the gap report — never as a bullet.
-2. **Accept gate.** PDF only ships after structural verify (sections and reading order derived from the chosen template, contact recoverable, within the `--pages` budget), zero ATS failures, and every profile-coverable JD gap closed. `overall` from the scorer is the ATS-readiness score, not a quality score; JD match is reported alongside it and is never a pass/fail bar. On honest stuck (provably profile-genuine gaps), the engine ships the best attempt + logs unresolved.
-3. **Humanizer at write time.** Every line the user reads passes through [`references/blacklist.md`](references/blacklist.md) — no em-dash punctuation, no "leverage", no negative parallelism, no chatbot ceremony. Longer prose (cover letter, gap report) also follows [`references/writing-style.md`](references/writing-style.md).
-4. **Profile = source of truth.** All résumé writing reads from `profile.json`. Stale profile → stale tailoring. Re-run `/profile-build` when you finish a new project.
-
----
-
-## Sample run (real validation)
-
-| Role tested | Field | ATS | JD match | Verdict |
-|---|---|---|---|---|
-| Junior Data Developer | tech, strong fit | 100/100 | 57/100 | ceiling = sector + startup-history gaps (gambling, US/UK startup) |
-| Data Engineer (mid) | tech, strong fit | 100/100 | 72/100 | ceiling = Azure / AWS / LLM-RAG gaps |
-| Data Quality Engineer | tech, niche stack | 100/100 | 77/100 | ceiling = Azure Databricks / PySpark / SAP gaps |
-| Senior Data Engineer | tech, junior profile | 100/100 | 58/100 | flagged "don't apply at this level" in recommendations |
-| Junior Accountant | non-tech, no fit | 100/100 | 45/100 | engine refused to fabricate; skills 57% on Excel/Power BI, requirements 28% on real financial work |
-
-Scores scale with real qualification, not iteration count. ATS readiness is 100/100 on all of them — the formatting engine is solid regardless of fit.
-
-External validation: a strong-fit run hit **100% on Jobscan**, **92% on MyCVCreator**. Our internal scorer is stricter than industry tools.
 
 ---
 
 ## Notes & gotchas
 
-- **First-run install pulls ~150 MB.** Tectonic alone is ~50 MB; LaTeX package cache adds another ~50 MB on first compile.
-- **Page budget is a hard block.** One page by default; raise it with `--pages N`. The engine will cut a project or tighten wording rather than spill over whatever budget is set. It never ships a resume that exceeds it.
-- **Profile drives everything.** A thin profile produces a thin résumé. Spend time on `/profile-build` once; reap it on every job after.
-- **No browser extension.** Earlier scope considered one for JD capture; killed it. Manual paste-or-file-path is simpler and avoids per-browser dev-mode installs + native messaging hosts for arbitrary disk paths.
-- **Repair loop has no iteration cap.** It runs until the accept gate passes OR remaining gaps are provably profile-genuine, ranking iterations by JD fit once the document parses cleanly. Two consecutive iterations with the same score = stuck; ships best.
-- **`tool --md` never overwrites.** Given a path that already exists it writes `resume-2.md` and returns 0. The playbook deletes the target first; if you script around the engine, do the same or you will re-read a stale extraction.
-- **Justified text can lose its word boundaries.** Every template sets `\tolerance`, `\emergencystretch` and zeroes the interword shrink. Without that, a squeezed line extracts as `graphneuralnetworks,machine-learnedinteratomicpotentials` — perfect on screen, invisible to an ATS. Keep the block if you write your own template.
-- **Hyphenation is switched off on purpose.** A word TeX breaks across a line keeps the hyphen in the extracted text — `configu-ration sampling`, `agen-tic` — so the keyword never matches the JD even though the PDF is right. `\hyphenpenalty` and `\exhyphenpenalty` are both set to 10000; removing either costs real JD points (measured: 60 → 63 from adding them).
-- **Summary is capped at four rendered lines.** `\rsummary` measures itself and writes `SUMMARY-LINES: N` to the log, so the cap is checked, not eyeballed. Lines, not words — the same sentence wraps differently on a 1-page and a 2-page layout.
-- **Test on the agent's tooling, not the engine.** If `/tailor` misbehaves, `skills/tailor/SKILL.md` is the source of truth — read it, then ask the harness to follow it more strictly.
+- **First install pulls ~150 MB.** Tectonic is ~50 MB; the LaTeX package cache adds another ~50 MB on first compile.
+- **The page budget is a hard block.** The engine cuts a project or tightens wording rather than spilling over. It never ships a résumé that exceeds the budget.
+- **A thin profile makes a thin résumé.** Time spent on `/ijob-profile` pays back on every job afterwards.
+- **Discovery costs, selection doesn't.** Each metered API gives 200 requests a month. Re-ranking what you already have is free, so "show me something different" should always be `/ijob-shortlist`.
+- **A posting with no captured body can't be tailored against.** The engine says so and skips it rather than writing a résumé against a job title.
+- **Scraped job text is data, never instructions.** If a posting contains something that reads like a directive, it gets reported, not obeyed.
+- **No browser extension.** Considered for JD capture and killed — paste-or-path is simpler and avoids per-browser dev-mode installs.
+- **The repair loop has no iteration cap.** It runs until the accept gate passes or the remaining gaps are provably profile-genuine. Two iterations with the same score means stuck; it ships the best.
+- **Justified text can lose word boundaries, and hyphenation breaks keywords.** Every bundled template sets `\tolerance`, `\emergencystretch`, zeroed interword shrink, and `\hyphenpenalty`/`\exhyphenpenalty` at 10000. A squeezed line extracts as `graphneuralnetworks` — perfect on screen, invisible to an ATS. Keep those blocks if you write your own template; removing them costs measured JD points.
+- **If a command misbehaves, read its `SKILL.md`.** That file is the source of truth, not this README. Ask your harness to follow it more strictly.
 
 ---
 
 ## Contributing
 
-PRs welcome — but read [CONTRIBUTING.md](CONTRIBUTING.md) first. The short version: this is a Markdown playbook system. Glue code, build steps, web UIs, and new external dependencies will be politely declined. The whole point is that the agent IS the engine.
+PRs welcome — read [CONTRIBUTING.md](CONTRIBUTING.md) first. The short version: this is a Markdown playbook system. Glue code, build steps, web UIs and new external dependencies will be politely declined. The whole point is that the agent is the engine.
 
 Good first issues are labelled [`good first issue`](../../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) — usually playbook wording, verb-bank additions, doc fixes.
 
-Security issues: see [SECURITY.md](SECURITY.md) — email, don't open a public issue.
-
-Be a person: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Security issues: [SECURITY.md](SECURITY.md) — email, don't open a public issue.
 
 ---
 
 ## Credits and license
 
-This repository is a **derivative work** of [NoahMustafa/open-resume-agent](https://github.com/NoahMustafa/open-resume-agent) by Mahmoud Mustafa, released under the MIT License. It has been created and substantially modified by **Fakhrul Hasan Bhuiyan** and is maintained here independently; changes are not submitted upstream. The original copyright notice is retained in [LICENSE](LICENSE) as the MIT terms require.
+Written and maintained by **Fakhrul Hasan Bhuiyan**. The résumé scoring is done by [open-ATS](https://github.com/NoahMustafa/open-ATS), bundled as a binary and fetched by `/ijob-setup`; the PDFs are compiled by [tectonic](https://github.com/tectonic-typesetting/tectonic).
 
-It also uses [open-ATS](https://github.com/NoahMustafa/open-ATS), the same author's scorer, as a bundled binary.
-
-The Markdown playbooks, templates, and references in this repo are [MIT-licensed](LICENSE): use them, fork them, change them. The two bundled binaries (`tool`, `tectonic`) are governed by their own licenses — see [TOOL-README.md](TOOL-README.md) and [tectonic-typesetting/tectonic](https://github.com/tectonic-typesetting/tectonic).
+The Markdown playbooks, templates and references in this repo are [MIT-licensed](LICENSE): use them, fork them, change them. The two bundled binaries (`tool`, `tectonic`) are governed by their own licenses — see [docs/tool.md](docs/tool.md) and [tectonic-typesetting/tectonic](https://github.com/tectonic-typesetting/tectonic).
 
 Contact: <fbhuiyan@anl.gov>.

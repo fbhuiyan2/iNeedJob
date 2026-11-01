@@ -127,7 +127,7 @@ reconstruction, glyph cleanup, and link recovery all carry over.
 ```
 tool resume.pdf --md                 # writes resume.md beside the resume
 tool resume.pdf --md out.md          # explicit output file
-tool resume.pdf --md docs/           # a directory → docs/resume.md
+tool resume.pdf --md out/            # a directory → out/resume.md
 tool resume.pdf --md --force         # overwrite instead of auto-renaming
 ```
 

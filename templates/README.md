@@ -1,26 +1,26 @@
 # Templates
 
-Every file here is **one example layout, not a required format.** Copy one, rewrite it for your field, and point `/tailor` at it with `--template`.
+Every file here is **one example layout, not a required format.** Copy one, rewrite it for your field, and point `/ijob-tailor` at it with `--template`.
 
 | File | Shape |
 |---|---|
 | `resume.tex.tmpl` | Default. One page. Summary, Skills, Projects, Experience, Education. Industry/software flavoured. |
-| `resume-2page.tex.tmpl` | Longer form. Summary, Education, Experience, Skills, Publications, Leadership, Awards. Research/academic flavoured. |
+| `resume-2page.tex.tmpl` | Longer form. Summary, Education, Research Experience, Skills, Highlighted Journal Publications, Leadership & Teamwork Experience, Selected Awards & Honors, References. Research/academic flavoured, and the only bundled layout with a References section (`--ref N`). |
 | `cover-letter.tex.tmpl` | Cover letter, moderncv `classic`. Selected with `--cl-template`. |
 
 ## The template owns the sections
 
-`/tailor` reads the `\rsection{...}` calls from whichever template you choose, top to bottom, ignoring `%`-commented lines, and that becomes the expected section list and reading order for the structural verify gate. There is no hardcoded list anywhere in the engine. A section whose profile data is empty is dropped rather than shipped as an empty heading.
+`/ijob-tailor` reads the `\rsection{...}` calls from whichever template you choose, top to bottom, ignoring `%`-commented lines, and that becomes the expected section list and reading order for the structural verify gate. There is no hardcoded list anywhere in the engine. A section whose profile data is empty is dropped rather than shipped as an empty heading.
 
 So a different field just means a different template. Reorder the sections, rename them, add ones that don't exist here — the gate follows the file.
 
 ## Using your own
 
 ```
-/tailor --template my-layout                 # -> templates/my-layout.tex.tmpl
-/tailor --cl-template my-letter              # cover letter layout
-/tailor --template ~/private/my-resume.tmpl  # any path, including outside this repo
-/tailor --pages 2 --template my-layout       # a 2-page budget on a layout of your choosing
+/ijob-tailor --template my-layout                 # -> templates/my-layout.tex.tmpl
+/ijob-tailor --cl-template my-letter              # cover letter layout
+/ijob-tailor --template ~/private/my-resume.tmpl  # any path, including outside this repo
+/ijob-tailor --pages 2 --template my-layout       # a 2-page budget on a layout of your choosing
 ```
 
 Keeping a personal template in a private repo is the recommended pattern — layouts tend to carry personal formatting choices, and `--template` takes a path precisely so it doesn't have to live here.
@@ -34,7 +34,7 @@ resume_template:
   compact:       "my-layout"                       # -> templates/my-layout.tex.tmpl
 ```
 
-Then `/tailor` picks the right one from the page budget alone, `--template compact` (or "use the compact layout") picks by name, and a path still works for a one-off. Omit the key entirely and the same page rule runs against the bundled layouts: `resume` at one page, `resume-2page` above — a one-page layout stretched to two pages has no Publications and no References section, which is rarely what was wanted.
+Then `/ijob-tailor` picks the right one from the page budget alone, `--template compact` (or "use the compact layout") picks by name, and a path still works for a one-off. Omit the key entirely and the same page rule runs against the bundled layouts: `resume` at one page, `resume-2page` above — a one-page layout stretched to two pages has no Publications and no References section, which is rarely what was wanted.
 
 ## Cover letter templates
 
@@ -48,7 +48,7 @@ The margin floor below applies to resumes, where the scorer runs. Cover letters 
 
 ## References section (optional)
 
-A template may end with a `\rsection{References}`. When it does, `/tailor --ref N` sizes it from `profile.references[]`: default 1 (the entry flagged `"default": true`), `--ref 0` drops the section, `N>1` makes the agent ask which referees to use. Templates without the section ignore the flag. Keep References last — a referee block above Education reads as a mistake.
+A template may end with a `\rsection{References}`. When it does, `/ijob-tailor --ref N` sizes it from `profile.references[]`: default 1 (the entry flagged `"default": true`), `--ref 0` drops the section, `N>1` makes the agent ask which referees to use. Templates without the section ignore the flag. Keep References last — a referee block above Education reads as a mistake.
 
 ## Rules any template must follow
 
@@ -72,7 +72,7 @@ Both fixes cost a little vertical space and buy back the words. Don't reach for 
 
 ## Layout macros
 
-The bundled templates define four helpers. A custom template does not have to use them, but `/tailor` checks two of them, so dropping them means dropping the check.
+The bundled templates define four helpers. A custom template does not have to use them, but `/ijob-tailor` checks two of them, so dropping them means dropping the check.
 
 | Macro | What it does |
 |---|---|

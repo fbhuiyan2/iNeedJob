@@ -3,11 +3,8 @@ MIT License
 Copyright (c) 2026 Mahmoud Mustafa (NoahMustafa)
 Copyright (c) 2026 Fakhrul Hasan Bhuiyan
 
-This repository is a derivative work of
-https://github.com/NoahMustafa/open-resume-agent, originally created by
-Mahmoud Mustafa and released under the MIT License. It has been created
-and substantially modified by Fakhrul Hasan Bhuiyan, and remains MIT-licensed.
-The original copyright notice above is retained as the license requires.
+Portions of this repository originate in an MIT-licensed work by Mahmoud
+Mustafa; the copyright notice above is retained as that license requires.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +26,6 @@ SOFTWARE.
 
 Note: this license covers the Markdown playbooks, templates, and references
 in this repository. The bundled binaries (`tool`, `tectonic`) are fetched by
-`/resume-engine-setup` and are governed by their own upstream licenses — see
-[TOOL-README.md](TOOL-README.md) and
+`/ijob-setup` and are governed by their own upstream licenses — see
+[docs/tool.md](docs/tool.md) and
 [tectonic-typesetting/tectonic](https://github.com/tectonic-typesetting/tectonic).

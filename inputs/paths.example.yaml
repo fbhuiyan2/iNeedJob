@@ -13,18 +13,18 @@
 # ~ and $HOME both expand. Relative paths resolve against the engine repo root.
 
 # --- Profile -------------------------------------------------------------
-# Where profile.json lives, and where /profile-build writes it.
+# Where profile.json lives, and where /ijob-profile writes it.
 # Default (both empty): inputs/profile.json, inside this repo and gitignored.
 #
 # Set `profile` to keep the profile somewhere that syncs across machines —
 # a private repo, a synced folder. The directory must already exist.
 #
 # `profile_config` points at a profile-config.md, which switches
-# /profile-build into DERIVED mode: profile.json is generated from a richer
+# /ijob-profile into DERIVED mode: profile.json is generated from a richer
 # career record (a CV plus notes) instead of maintained by hand. Leave it
-# empty unless you keep such a record. If it is empty, /profile-build still
+# empty unless you keep such a record. If it is empty, /ijob-profile still
 # looks for a profile-config.md sitting next to `profile`.
-# Template: profile-config.example.md in the repo root.
+# Template: inputs/profile-config.example.md.
 profile: ""
 profile_config: ""
 

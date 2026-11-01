@@ -8,10 +8,12 @@
 
 ## How tested
 <!-- Required for anything beyond doc typos. -->
-- [ ] Ran `/tailor` end-to-end on at least one JD
+- [ ] Ran `/ijob-tailor` end-to-end on at least one JD
 - [ ] Resume PDF is 1 page
 - [ ] ATS structural verify passed (`tool resume.pdf --json` → no `severity:fail`)
-- [ ] JD-match score ≥ 85 (or honest stuck on profile-genuine gaps)
+- [ ] `ats.score` ≥ 85 — the formatting floor. **JD-fit is never gated**: a
+      low `jd_match` on a posting the profile genuinely does not cover is the
+      correct outcome, not a failure to fix
 - [ ] No fabrication slipped into bullets — every claim traces to `profile.json`
 - [ ] N/A — docs / playbook wording only
 

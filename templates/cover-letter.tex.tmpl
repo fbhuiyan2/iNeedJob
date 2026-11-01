@@ -3,14 +3,14 @@
 %
 %  This is ONE example, not a required format. Copy it and change
 %  whatever you like. Selected with:
-%     /tailor --cover --cl-template cover-letter
-%     /tailor --cl-only --cl-template cover-letter
+%     /ijob-tailor --cover --cl-template cover-letter
+%     /ijob-tailor --cl-only --cl-template cover-letter
 %
 %  Agent: read this as the PATTERN and write a fresh .tex. Fill the
 %  \newcommand block and the body; leave the preamble alone unless
 %  the user asks for a different look.
 %
-%  Content rules live in the /tailor playbook §11d (cover letter)
+%  Content rules live in the /ijob-tailor playbook §11d (cover letter)
 %  and §11e (outreach). The hard ones:
 %   - No fixed length. The style examples in inputs/cover-letter-
 %     examples/ govern length and organization; --cl-pages N caps
@@ -117,9 +117,20 @@ I am applying for the \textit{\theposition} position in \theunit\ at \theorg. Op
 % Follow whatever the examples show. Only --cl-pages N imposes a cap.
 % Every claim traces to profile.json, including anything an example
 % mentions: an example is a style reference, never a content source.
-\textbf{First posting requirement:} Evidence answering it. Name specific projects, methods, and outcomes, with quantification where the profile genuinely has it. Mirror the posting's vocabulary only where real experience backs it.
+%
+% The letter SUPPLEMENTS the resume; it is not the resume rewritten as
+% paragraphs. Reuse a project or result only as an anchor for explanation
+% the resume cannot carry: the problem and why it mattered, method choice,
+% connections between stages or data sources, scientific tradeoffs, model
+% validity or uncertainty, implications, or transfer to the target role. If
+% a paragraph can become two resume bullets without losing its value, rewrite
+% it for conceptual depth. Compare the final body with resume.md and remove
+% consecutive sentences that merely restate it. Keep missing qualifications
+% out of the application materials. Omit unsupported claims, and report gaps
+% only in the coverage report and final run summary.
+\textbf{First posting requirement:} Identify one evidence-backed project, then explain the underlying problem, reasoning, tradeoff, or implication that connects it to the target work.
 
-\textbf{Second posting requirement:} Same again. Add or remove headings to match the posting and the examples.
+\textbf{Second posting requirement:} Develop another load-bearing idea rather than listing more accomplishments. Add or remove headings to match the posting and the examples.
 
 % --- Closing paragraph, short -------------------------------------
 % One sentence on the contribution, then the thank-you. No filler.

@@ -22,7 +22,7 @@ body:
     attributes:
       label: Proposed change
       description: Be specific. Which file, which section, what the new behavior is.
-      placeholder: "Add a `--target N` flag to /tailor that overrides the default 85 floor. Doc it in skills/tailor/SKILL.md §2b."
+      placeholder: "Add a `--target N` flag to /ijob-tailor that overrides the default 85 floor. Doc it in skills/ijob-tailor/SKILL.md §2b."
     validations:
       required: true
 

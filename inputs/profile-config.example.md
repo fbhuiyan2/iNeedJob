@@ -2,11 +2,11 @@
 
 **This is a template.** Copy it to `inputs/profile-config.md` and edit it to describe your record. If you keep your profile outside the repo, put it next to that profile instead, or name it explicitly with the `profile_config:` key in `inputs/paths.yaml`.
 
-Its presence is what switches `/profile-build` into **derived mode**. The skill looks for it at the `profile_config:` path in `inputs/paths.yaml` if that key is set, otherwise beside the resolved `profile.json`. Not found means standalone mode, which parses a CV from `inputs/` instead.
+Its presence is what switches `/ijob-profile` into **derived mode**. The skill looks for it at the `profile_config:` path in `inputs/paths.yaml` if that key is set, otherwise beside the resolved `profile.json`. Not found means standalone mode, which parses a CV from `inputs/` instead.
 
 Derived mode exists so you do not maintain the same career facts twice. Your record stays the source of truth; `profile.json` becomes a regenerable index of it, shaped for the engine's tag-overlap prefilter. Never hand-edit a derived `profile.json` to add a fact — edit the record and regenerate, or the two drift and the resume starts citing things the record does not contain.
 
-Delete any section below that does not apply. `/profile-build` looks for the four required headings — Source files, Record conventions, Schema extensions, Tagging vocabulary — plus an optional Depth section.
+Delete any section below that does not apply. `/ijob-profile` looks for the four required headings — Source files, Record conventions, Schema extensions, Tagging vocabulary — plus an optional Depth section.
 
 ---
 
@@ -71,4 +71,4 @@ Tag publications by method and domain, never by journal.
 
 ## Depth (optional)
 
-If the record calibrates how deep each skill goes, say so here and name the field. `/profile-build` carries it into `skills.*[].depth` as `expert` | `working` | `familiar`, and the tailoring pass will not present a `familiar` skill as a headline strength.
+If the record calibrates how deep each skill goes, say so here and name the field. `/ijob-profile` carries it into `skills.*[].depth` as `expert` | `working` | `familiar`, and the tailoring pass will not present a `familiar` skill as a headline strength.

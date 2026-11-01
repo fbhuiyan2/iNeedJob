@@ -13,9 +13,11 @@ body:
     attributes:
       label: Which area?
       options:
-        - /setup (binary fetch / verification)
-        - /profile-build (profile.json creation / update)
-        - /tailor (per-JD tailoring loop)
+        - /ijob-setup (binary fetch / verification)
+        - /ijob-profile (profile.json creation / update)
+        - /ijob-tailor (per-JD tailoring loop)
+        - /ijob-scrape (discovery / sources / quota)
+        - /ijob-shortlist (selection, ranking, the fit floor)
         - LaTeX template / compile
         - Scoring / accept-gate logic
         - recommendations.md output
@@ -29,7 +31,7 @@ body:
     attributes:
       label: What happened
       description: One paragraph. What did the engine do that it shouldn't have?
-      placeholder: "Ran /tailor on a Senior DE JD. Engine claimed 95/100 but the PDF contains a bullet about Azure that's not in profile.json."
+      placeholder: "Ran /ijob-tailor on a Senior DE JD. Engine claimed 95/100 but the PDF contains a bullet about Azure that's not in profile.json."
     validations:
       required: true
 
@@ -49,7 +51,7 @@ body:
       placeholder: |
         1. Cloned repo at commit <SHA>
         2. Harness: Claude Code, Opus 4.7
-        3. Ran /tailor with this JD: (paste or attach)
+        3. Ran /ijob-tailor with this JD: (paste or attach)
         4. profile.json had no `azure` tag anywhere
         5. Got outputs/.../resume.pdf with the offending bullet
       render: markdown

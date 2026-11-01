@@ -2,7 +2,7 @@
 
 `blacklist.md` says what never to write. This file says how to write the rest. Where they overlap, `blacklist.md` wins, because it is the preventive ruleset the scorer's writing-advice checks mirror.
 
-Scope: cover letters, outreach, gap reports, and any longer-form document this repo grows into. Résumé bullets have their own tighter rules in the `/tailor` playbook §4; the principles here still apply, the document-type sections below do not.
+Scope: cover letters, outreach, gap reports, and any longer-form document this repo grows into. Résumé bullets have their own tighter rules in the `/ijob-tailor` playbook §4; the principles here still apply, the document-type sections below do not.
 
 ## Hard rules
 
@@ -57,7 +57,7 @@ Journal-manuscript conventions are deliberately out of scope here. Tense and voi
 
 ## Document types
 
-**Cover letters and job materials.** Professional and confident, never inflated. Specific over generic: name the project, the method, and the outcome. Tailor to the posting and the audience. Every claim traces to the record. The opening and closing stay short; the body is where the evidence goes.
+**Cover letters and job materials.** Professional and confident, never inflated. Confident means the letter may say outright that a piece of work was difficult, that the applicant owned it, or that they are well suited to the role; inflated means adjectives doing the work that evidence should ("world-class", "perfect fit", "highly motivated"). Specific over generic: name the project, the method, and the outcome. Tailor to the posting and the audience. Every claim traces to the record. The opening and closing stay short; the body is where the evidence goes.
 
 **Outreach.** One sentence naming the role and how you found it, one on the strongest evidence match, one asking for a next step. Nothing else.
 
