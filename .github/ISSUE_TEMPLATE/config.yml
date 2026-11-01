@@ -7,7 +7,7 @@ contact_links:
     url: https://github.com/NoahMustafa/open-ATS/issues
     about: Bugs in the scoring math, parser, or binaries themselves belong upstream.
   - name: Discussions
-    url: https://github.com/fbhuiyan2/resume-tailor-agent/discussions
+    url: https://github.com/fbhuiyan2/iNeedJob/discussions
     about: Design questions, "how do I…", show-and-tell, non-bug feedback.
   - name: Upstream project (original)
     url: https://github.com/NoahMustafa/open-resume-agent

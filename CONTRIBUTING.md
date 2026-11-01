@@ -53,7 +53,7 @@ Run the deterministic checks relevant to your change:
 ```sh
 python3 -c "import ast,glob; [ast.parse(open(f).read()) for f in glob.glob('scripts/*.py')]"
 bash -n skills/install.sh
-python3 -I scripts/jobstore.py --root /tmp/resume-tailor-check stats
+python3 -I scripts/jobstore.py --root /tmp/ineedjob-check stats
 ```
 
 If you changed the tailoring playbook or a template, run `/ijob-tailor` from an agent session on at least one JD. Confirm that the PDF stays within the selected page budget, structural verification passes, and `ats.score` meets the configured formatting floor. The JD-match score is reported but never gated.

@@ -1,6 +1,6 @@
 <div align="center">
 
-# Resume Tailor Agent
+# iNeedJob
 
 **A Markdown playbook that turns an agentic LLM into a per-job résumé tailor, without fabricated experience, AI filler, servers, or glue code.**
 
@@ -38,12 +38,12 @@ The initial setup has three parts. Choose an agent, build your profile, and add 
 
 You do not need to install or build the project by hand. Start a session in an agentic LLM harness with file and shell access, such as Claude Code, OpenCode, Codex, or Cursor. Then say:
 
-> Clone https://github.com/fbhuiyan2/resume-tailor-agent and set it up for me.
+> Clone https://github.com/fbhuiyan2/iNeedJob and set it up for me.
 
 The agent reads [`AGENTS.md`](AGENTS.md) and handles the setup:
 
 ```
-Cloned to ~/soft/resume-tailor-agent
+Cloned to ~/soft/iNeedJob
 
 Installing skills -> ~/.claude/skills
   /ijob-setup  /ijob-profile  /ijob-tailor  /ijob-scrape  /ijob-shortlist
@@ -358,7 +358,7 @@ No daemon, no background loop, no orchestration framework. **The agent is the en
 ## Repo layout
 
 ```
-resume-tailor-agent/
+iNeedJob/
 ├── README.md                       # user-facing — this file
 ├── AGENTS.md · CLAUDE.md           # agent-facing entry point
 │

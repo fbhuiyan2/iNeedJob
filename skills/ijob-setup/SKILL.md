@@ -1,6 +1,6 @@
 ---
 name: ijob-setup
-description: Bootstrap or upgrade the resume-tailor-agent binaries (the open-ATS scorer and the Tectonic LaTeX compiler) on a new machine. Use when setting up the resume engine for the first time, when /ijob-tailor halts reporting a missing tool or tectonic binary, or when the user asks to update the resume engine toolchain.
+description: Bootstrap or upgrade the iNeedJob binaries (the open-ATS scorer and the Tectonic LaTeX compiler) on a new machine. Use when setting up the resume engine for the first time, when /ijob-tailor halts reporting a missing tool or tectonic binary, or when the user asks to update the resume engine toolchain.
 ---
 
 # /ijob-setup — bootstrap engine binaries
@@ -14,7 +14,7 @@ ENGINE="__ENGINE_PATH__"   # rewritten by install.sh
 cd "$ENGINE" || { echo "Engine repo not found at $ENGINE"; exit 1; }
 ```
 
-`install.sh` rewrites that path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
+`install.sh` rewrites that path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$INEEDJOB_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/iNeedJob`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
 **`cd "$ENGINE"` is required, not optional.** Every recipe in `skills/ijob-setup/SKILL.md` is written relative to the current directory (`curl -o tool`, `tar -xzf`, "keep the binary at repo root"). Run from anywhere else and you download a 110 MB binary into the user's working directory, then fail the verify step.
 

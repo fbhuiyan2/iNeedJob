@@ -1,4 +1,4 @@
-# How to set up resume-tailor-agent — agent reference
+# How to set up iNeedJob — agent reference
 
 > **This document is written for an agent, not for a person.**
 >
@@ -54,7 +54,7 @@ So the real logic goes in a **skill** — written once, both tools see it. OpenC
 ## Step 1 — clone the engine
 
 ```sh
-git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
+git clone https://github.com/fbhuiyan2/iNeedJob ~/soft/iNeedJob
 ```
 
 Any path works — `install.sh` bakes the absolute path into the skills. Re-run the installer if you later move the repo.
@@ -64,7 +64,7 @@ Any path works — `install.sh` bakes the absolute path into the skills. Re-run 
 Per machine, since both are gitignored. On a fresh clone, read and follow [`skills/ijob-setup/SKILL.md`](../skills/ijob-setup/SKILL.md) directly. The `/ijob-setup` alias becomes available after Step 3 and a harness restart. The manual example below is for Linux x86_64 only:
 
 ```sh
-cd ~/soft/resume-tailor-agent
+cd ~/soft/iNeedJob
 curl -fL -o tool "https://github.com/NoahMustafa/open-ATS/releases/download/v0.2.0/tool-linux-x86_64"
 chmod +x tool
 curl -fL -o tectonic.tar.gz "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic@0.17.0/tectonic-0.17.0-x86_64-unknown-linux-musl.tar.gz"
@@ -79,7 +79,7 @@ First LaTeX compile downloads a package cache (~50 MB, one time). A slow first r
 ## Step 3 — install the slash commands
 
 ```sh
-bash ~/soft/resume-tailor-agent/skills/install.sh
+bash ~/soft/iNeedJob/skills/install.sh
 ```
 
 That copies all five skills into `~/.claude/skills/` — and into every other harness directory it finds under `$HOME` — and writes the OpenCode command shims. Idempotent — re-run after a `git pull` to pick up playbook changes.
@@ -114,7 +114,7 @@ Only needed for literal `/ijob-tailor` keystrokes in OpenCode; `install.sh` alre
 
 ```markdown
 ---
-description: Tailor a resume + cover letter to a job description (resume-tailor-agent)
+description: Tailor a resume + cover letter to a job description (iNeedJob)
 ---
 Invoke the `ijob-tailor` skill and follow it exactly. Arguments: $ARGUMENTS
 ```
@@ -132,7 +132,7 @@ Invoke the `ijob-profile` skill and follow it exactly. Arguments: $ARGUMENTS
 
 ```markdown
 ---
-description: Bootstrap the resume-tailor-agent binaries (open-ATS scorer + Tectonic)
+description: Bootstrap the iNeedJob binaries (open-ATS scorer + Tectonic)
 ---
 Invoke the `ijob-setup` skill and follow it exactly. Arguments: $ARGUMENTS
 ```
@@ -150,9 +150,9 @@ Nothing is required. The skills resolve everything themselves:
 Override any of them only if you want to:
 
 ```sh
-export RESUME_TAILOR_HOME="$HOME/soft/resume-tailor-agent"   # engine repo
-export RESUME_TAILOR_PROFILE="/path/to/profile.json"       # skip discovery
-export RESUME_TAILOR_OUT="$HOME/job-applications"          # fixed output root
+export INEEDJOB_HOME="$HOME/soft/iNeedJob"   # engine repo
+export INEEDJOB_PROFILE="/path/to/profile.json"       # skip discovery
+export INEEDJOB_OUT="$HOME/job-applications"          # fixed output root
 ```
 
 ## Step 5b — optional: style examples and path overrides
@@ -216,12 +216,12 @@ from turning them on for you.
 ## Setting up a second machine
 
 ```sh
-git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
+git clone https://github.com/fbhuiyan2/iNeedJob ~/soft/iNeedJob
 git clone git@github.com:<you>/<your-private-profile-repo> ~/private/career-record
-bash ~/soft/resume-tailor-agent/skills/install.sh
+bash ~/soft/iNeedJob/skills/install.sh
 
-cp ~/soft/resume-tailor-agent/inputs/paths.example.yaml \
-   ~/soft/resume-tailor-agent/inputs/paths.yaml
+cp ~/soft/iNeedJob/inputs/paths.example.yaml \
+   ~/soft/iNeedJob/inputs/paths.yaml
 # edit it: set `profile:` (and `profile_config:` if you use derived mode)
 # to the paths inside ~/private/career-record
 
@@ -348,10 +348,10 @@ This engine produces **resumes**, one or two pages, ATS-safe. It is not a CV gen
 | Symptom | Cause |
 |---|---|
 | `/ijob-tailor` not offered | `SKILL.md` must be capitalized exactly; `name` must match the directory name; both `name` and `description` required. |
-| Skill found, paths break | `RESUME_TAILOR_HOME` unset and the repo is not at the default path. |
+| Skill found, paths break | `INEEDJOB_HOME` unset and the repo is not at the default path. |
 | `TOOL MISSING` / `TECTONIC MISSING` | Binaries are gitignored — run `/ijob-setup` on this machine. |
 | First compile hangs | Tectonic is downloading its package cache. One time, ~50 MB. |
-| Personal data in `git status` | Something wrote into the engine repo. Outputs belong in `$RESUME_TAILOR_OUT`, the profile in the private repo. |
+| Personal data in `git status` | Something wrote into the engine repo. Outputs belong in `$INEEDJOB_OUT`, the profile in the private repo. |
 | `/ijob-scrape` says it needs a profile | By design — discovery spends metered quota and has nothing to rank against without one. Run `/ijob-profile`. Selection over an existing corpus still works. |
 | `/ijob-scrape` reports no python3 | Install it. `/ijob-tailor` still works on a pasted or file JD, but not on a URL — fetching a posting runs `scripts/fetch_posting.py`. |
 | Monthly quota spent | 200 requests per API per month, tracked in `inputs/scrape/jobs.db`. Fall back to `/ijob-shortlist`, which costs nothing. |

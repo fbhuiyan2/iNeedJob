@@ -18,7 +18,7 @@ Two halves, deliberately separate:
 
 ## 1. Resolve paths (do this first, every run)
 
-**Engine root.** `install.sh` rewrites the line below at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
+**Engine root.** `install.sh` rewrites the line below at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$INEEDJOB_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/iNeedJob`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
 ```bash
 ENGINE="__ENGINE_PATH__"

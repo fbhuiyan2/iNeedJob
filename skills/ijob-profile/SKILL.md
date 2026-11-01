@@ -9,7 +9,7 @@ description: Build or update profile.json, the structured career-data file the r
 
 ## 1. Resolve paths
 
-**Engine root.** `install.sh` rewrites this to an absolute path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
+**Engine root.** `install.sh` rewrites this to an absolute path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$INEEDJOB_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/iNeedJob`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
 ```bash
 ENGINE="__ENGINE_PATH__"
@@ -20,7 +20,7 @@ ENGINE="__ENGINE_PATH__"
 1. **`$ENGINE/inputs/paths.yaml`**, if it exists — a non-empty `profile:` key is the destination, and a non-empty `profile_config:` key is the record config. Use this when the profile belongs somewhere other than the engine repo: a private record, a synced folder, a second machine's clone.
 2. **`$ENGINE/inputs/profile.json`** — the default. `inputs/` is gitignored, so the profile stays private.
 
-`$RESUME_TAILOR_PROFILE`, if set, overrides both.
+`$INEEDJOB_PROFILE`, if set, overrides both.
 
 **Mode.** Look for `profile-config.md`: at the `profile_config:` path if `paths.yaml` names one, otherwise beside the resolved profile.
 
@@ -308,7 +308,7 @@ Follow this only in standalone mode (§2). Derived mode follows the record's `pr
 - **Cold start** — `$PROFILE` does not exist. Build from scratch.
 - **Update** — `$PROFILE` exists. Additive merge; never silent-delete.
 
-`$PROFILE` is whatever §1 resolved. The precedence is `$RESUME_TAILOR_PROFILE`, then a non-empty `profile:` value in `$ENGINE/inputs/paths.yaml`, then `$ENGINE/inputs/profile.json`. Decide with `test -f "$PROFILE"`. Never use `test -f profile.json`. That tests the working directory and the old pre-`inputs/` location, so it can report a cold start for a user who already has a profile and then overwrite it.
+`$PROFILE` is whatever §1 resolved. The precedence is `$INEEDJOB_PROFILE`, then a non-empty `profile:` value in `$ENGINE/inputs/paths.yaml`, then `$ENGINE/inputs/profile.json`. Decide with `test -f "$PROFILE"`. Never use `test -f profile.json`. That tests the working directory and the old pre-`inputs/` location, so it can report a cold start for a user who already has a profile and then overwrite it.
 
 ## Inputs
 

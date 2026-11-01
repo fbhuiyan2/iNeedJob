@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Resume Tailor Agent turns an agentic LLM into a per-job résumé tailor. A job
+iNeedJob turns an agentic LLM into a per-job résumé tailor. A job
 description goes in; a tailored, ATS-scored PDF and an honest gap report come
 out. A cover letter and outreach draft are optional. `/ijob-scrape` is the front
 half. It finds the postings in the first place.
@@ -16,8 +16,8 @@ dependencies to install. The main `SKILL.md` files carry their procedures inline
 order; each says what it needs from the user.
 
 ```bash
-git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
-bash ~/soft/resume-tailor-agent/skills/install.sh     # also --list --all --harness X --uninstall
+git clone https://github.com/fbhuiyan2/iNeedJob ~/soft/iNeedJob
+bash ~/soft/iNeedJob/skills/install.sh     # also --list --all --harness X --uninstall
 ```
 
 1. **Install the skills.** Confirm that `python3` is on PATH, then run `skills/install.sh`. It copies each playbook into every

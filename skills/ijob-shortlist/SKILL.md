@@ -13,7 +13,7 @@ ENGINE="__ENGINE_PATH__"   # rewritten by install.sh
 SCRAPE="$ENGINE/skills/ijob-scrape/SKILL.md"    # read this, then come back
 ```
 
-If that still reads `__ENGINE_PATH__`, resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
+If that still reads `__ENGINE_PATH__`, resolve it yourself, in this order: `$INEEDJOB_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/iNeedJob`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
 **Skip §4 (Discovery) entirely.** Run §1 (paths), §1a (the profile gate), §2
 (read the request), §3 (preferences), then §5 (the funnel) onward. No source

@@ -16,7 +16,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE="$(cd "$HERE/.." && pwd)"   # HERE is skills/, so ENGINE is the repo root
 
 SKILLS=(ijob-tailor ijob-profile ijob-setup ijob-scrape ijob-shortlist)
-MARKER=".installed-by-resume-tailor-agent"   # ownership marker, see the backup check
+MARKER=".installed-by-ineedjob"   # ownership marker, see the backup check
 
 # Harnesses and the directory each one scans for skills, relative to $HOME.
 # A harness not listed here can still use the playbooks: they are plain
@@ -180,9 +180,9 @@ Invoke the \`$1\` skill and follow it exactly. Arguments: \$ARGUMENTS
 SHIM
     echo "  /$1"
   }
-  shim ijob-tailor "Tailor a resume + cover letter to a job description (resume-tailor-agent)"
+  shim ijob-tailor "Tailor a resume + cover letter to a job description (iNeedJob)"
   shim ijob-profile "Build or update profile.json"
-  shim ijob-setup "Bootstrap the resume-tailor-agent binaries (open-ATS scorer + Tectonic)"
+  shim ijob-setup "Bootstrap the iNeedJob binaries (open-ATS scorer + Tectonic)"
   shim ijob-scrape "Find job postings, rank them against your profile, hand them to /ijob-tailor"
   shim ijob-shortlist "Narrow and rank the postings already collected (no fetching, no quota)"
 elif [ "$mode" = uninstall ]; then

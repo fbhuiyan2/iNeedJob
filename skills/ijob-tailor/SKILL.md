@@ -1,15 +1,15 @@
 ---
 name: ijob-tailor
-description: Tailor a resume (and optionally a cover letter) to a specific job description, producing an ATS-scored PDF plus a gap report. Use when the user supplies a job posting as a URL, a file, or pasted text and wants a resume targeted at it, asks to "tailor my resume", gives several posting URLs to work through at once, requests a cover letter for a named role, or passes flags like --pages, --template, --cl-only, --cover, or --target. Runs the resume-tailor-agent engine end to end.
+description: Tailor a resume (and optionally a cover letter) to a specific job description, producing an ATS-scored PDF plus a gap report. Use when the user supplies a job posting as a URL, a file, or pasted text and wants a resume targeted at it, asks to "tailor my resume", gives several posting URLs to work through at once, requests a cover letter for a named role, or passes flags like --pages, --template, --cl-only, --cover, or --target. Runs the iNeedJob engine end to end.
 ---
 
 # /ijob-tailor — job description in, tailored resume + cover letter out
 
-Runs the resume-tailor-agent engine. The authoritative playbook lives in the engine repo; this skill resolves paths so the flow works from ANY directory, adds the `--pages`, `--template`, and `--cl-only` flags, and then hands off.
+Runs the iNeedJob engine. The authoritative playbook lives in the engine repo; this skill resolves paths so the flow works from ANY directory, adds the `--pages`, `--template`, and `--cl-only` flags, and then hands off.
 
 ## 1. Resolve paths (do this first, every run)
 
-**Engine root.** `install.sh` rewrites the line below to the absolute path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$RESUME_TAILOR_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/resume-tailor-agent`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
+**Engine root.** `install.sh` rewrites the line below to the absolute path at install time. If it still reads `__ENGINE_PATH__`, the skill was copied by hand — resolve it yourself, in this order: `$INEEDJOB_HOME`, then **the directory this `SKILL.md` is being read from** (its repo root is two levels up, and that is always the right answer when you are reading the playbook out of a clone). Never guess a conventional path such as `$HOME/soft/iNeedJob`: on the author's own machine that is the live repo, so a run meant for a test copy writes into the real corpus and the real profile. If neither resolves, stop and ask — do not proceed against a guessed root.
 
 ```bash
 ENGINE="__ENGINE_PATH__"
@@ -24,7 +24,7 @@ test -x "$ENGINE/tectonic" || echo "TECTONIC MISSING - run /ijob-setup"
 
 If neither resolves → halt: "No profile found. Run `/ijob-profile` first." If `$ENGINE/profile.json` exists at the repo root, add: "Found a profile at the old repo-root location; move it to `inputs/profile.json` or point `profile:` at it in `inputs/paths.yaml`."
 
-`$RESUME_TAILOR_PROFILE`, if set, overrides both.
+`$INEEDJOB_PROFILE`, if set, overrides both.
 
 **Derived mode.** If a `profile-config.md` sits next to the resolved profile — or `paths.yaml` names one — the profile is generated from a richer career record rather than maintained by hand. That file is read by `/ijob-profile`, not by `/ijob-tailor`; `/ijob-tailor` only ever reads `profile.json`.
 
@@ -42,7 +42,7 @@ If neither resolves → halt: "No profile found. Run `/ijob-profile` first." If 
 | `default_pages` | `--pages` default (§2b) | `1` |
 | `default_target_score` | `--target` default (§2b) | `85` |
 
-A flag passed on the command line always wins over `paths.yaml`, which always wins over the built-in default. `$RESUME_TAILOR_PROFILE` and `$RESUME_TAILOR_OUT` win over everything.
+A flag passed on the command line always wins over `paths.yaml`, which always wins over the built-in default. `$INEEDJOB_PROFILE` and `$INEEDJOB_OUT` win over everything.
 
 **Style example directories.** `resume_examples` and `cover_letter_examples` above. Used in §4a.
 
@@ -53,7 +53,7 @@ A flag passed on the command line always wins over `paths.yaml`, which always wi
 3. Otherwise → `./resume-agent-output_{company-slug}-{role-slug}/` in the current working directory.
 4. **Never write inside `$ENGINE`.** If any rule above resolves to a path inside the engine repo, fall back to `$HOME/job-applications/{company-slug}/{role-slug}-{YYYYMMDD}/` and say so. The engine repo is a public fork and personal artifacts must not land in it.
 
-`output_root` in `paths.yaml` overrides rules 1 through 3; `$RESUME_TAILOR_OUT` overrides everything. Under either, write into `{output_root}/{company-slug}/{role-slug}-{YYYYMMDD}/`.
+`output_root` in `paths.yaml` overrides rules 1 through 3; `$INEEDJOB_OUT` overrides everything. Under either, write into `{output_root}/{company-slug}/{role-slug}-{YYYYMMDD}/`.
 
 Call the resolved directory `$OUTDIR`. Announce it before writing anything.
 
