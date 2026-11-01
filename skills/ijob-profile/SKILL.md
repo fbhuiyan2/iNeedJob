@@ -1,6 +1,6 @@
 ---
 name: ijob-profile
-description: Build or update profile.json, the structured source of truth the resume engine reads when tailoring. Use when the user asks to build, refresh, regenerate, or correct their resume profile, after they finish a new project, paper, or role that should appear on future resumes, or when /ijob-tailor halts because the profile is missing or stale.
+description: Build or update profile.json, the structured career-data file the resume engine reads when tailoring. Use when the user asks to build, refresh, regenerate, or correct their resume profile, after they finish a new project, paper, or role that should appear on future resumes, or when /ijob-tailor halts because the profile is missing or stale.
 ---
 
 # /ijob-profile — build or update profile.json
@@ -47,7 +47,7 @@ If a user wants derived mode but has no config yet, point them at `$ENGINE/input
 
 The profile is written to the resolved `$PROFILE` path. The default path, `$ENGINE/inputs/profile.json`, is gitignored and does not travel with a clone.
 
-**External path — warn before the first write.** If `$PROFILE` is anywhere else, run `git -C "$(dirname "$PROFILE")" remote -v` *before* writing. If it is inside a repository with a remote, name only the host and repository (`github.com/<owner>/<repo>`) — never print the full URL, which can carry a token (`https://<token>@github.com/...`) — and ask the user to confirm that repository is private before writing anything. This is a warning, not a guarantee: you cannot see a repository's visibility, and one with no remote today can gain one tomorrow. Ask once per profile path, not on every run.
+**External path, warn before the first write.** If `$PROFILE` is anywhere else, ask the user to confirm that the destination is private before writing. Do not run `git remote -v` or print a remote URL. A remote can contain an embedded credential, and repository visibility cannot be inferred safely from the local checkout. This is a warning, not a guarantee. Ask once per profile path, not on every run.
 
 Mention this once after writing:
 
@@ -98,7 +98,7 @@ If the destination already existed, show the diff and confirm before writing (§
 Immediately after the profile is written, every time:
 
 ```bash
-python3 -I "$ENGINE/scripts/profile_pdf.py" --profile "$PROFILE"
+python3 -I "$ENGINE/scripts/profile_pdf.py" --profile "$PROFILE" --out "$ENGINE/inputs/profile-score.pdf"
 {"ok": true, "pdf": ".../inputs/profile-score.pdf", "pages": 4, "bytes": 40306}
 ```
 
@@ -245,48 +245,39 @@ paraphrase it into something more comfortable.
 
 ### 8c. Write it, then show it
 
-```jsonc
+Write strict JSON. `search-prefs.json` does not support comments.
+
+```json
 {
   "version": 2,
   "job_interests": {
     "positions": ["computational materials scientist", "ML research scientist"],
-    "keywords":  ["interatomic potentials", "DFT", "MLIP"],
-    "sectors":   ["national_lab", "company"],
-    "locations": { "places": ["Illinois"], "work_mode": ["remote", "hybrid"] },
+    "keywords": ["interatomic potentials", "DFT", "MLIP"],
+    "sectors": ["national_lab", "company"],
+    "locations": {"places": ["Illinois"], "work_mode": ["remote", "hybrid"]},
     "recency_days": 30,
-    "derived_from_profile": true        // false once the user has edited them
+    "derived_from_profile": true
   },
   "job_exclusions": {
-    "auth":      ["citizen", "citizen_or_pr"],
-    "states":    ["TX"],
+    "auth": ["citizen", "citizen_or_pr"],
+    "states": ["TX"],
     "employers": [],
-    "titles":    ["lecturer"],
-    "keywords":  []
+    "titles": ["lecturer"],
+    "keywords": []
   },
   "sources": {
-    // own_* are the metered APIs. `enabled: true` is an intent, not an
-    // on-switch: each still does nothing until OWN_API_KEY is in
-    // inputs/secrets.env, and the quota ledger is what actually caps them.
-    "own_jsearch":     { "enabled": true,  "monthly_budget": 200 },
-    "own_linkedin":    { "enabled": true,  "monthly_budget": 200 },
-    "own_indeed":      { "enabled": true,  "monthly_budget": 200 },
-    // jobspy_* here only mirror the marker files, which are the sole
-    // authority: `search_jobspy.py --root "$ROOT" status` is what /ijob-scrape
-    // reads, and only the user can create a marker. Write what status
-    // actually reports rather than a hardcoded false, or this file will
-    // contradict the corpus on a machine where a site is already enabled.
-    "jobspy_indeed":   { "enabled": false },   // <- from `status`, not assumed
-    "jobspy_linkedin": { "enabled": false }
+    "own_jsearch": {"enabled": true, "monthly_budget": 200},
+    "own_linkedin": {"enabled": true, "monthly_budget": 200},
+    "own_indeed": {"enabled": true, "monthly_budget": 200},
+    "jobspy_indeed": {"enabled": false},
+    "jobspy_linkedin": {"enabled": false}
   },
-  "shortlist": {
-    // The floor /ijob-scrape §5b applies: the percentage of a posting's
-    // stated requirements the profile covers. Omitted or null means the 35
-    // default. 0 turns the floor off and ranks without rejecting anything.
-    "fit_floor": 35
-  },
+  "shortlist": {"fit_floor": 35},
   "watchlist": []
 }
 ```
+
+`derived_from_profile` becomes `false` after the user edits the interests. The three `own_*` entries express intent but still require `OWN_API_KEY`. The `jobspy_*` values must mirror `search_jobspy.py --root "$ROOT" status`; marker files remain authoritative. `shortlist.fit_floor` is requirement coverage as a percentage. Omit it or set it to `null` for the default of 35, or set it to 0 to disable the floor.
 
 `derived_from_profile` matters: when it is `true`, a later `/ijob-profile` run
 may refresh positions and keywords from the updated profile. Once the user has
@@ -306,7 +297,7 @@ still easy to change.
 
 Follow this only in standalone mode (§2). Derived mode follows the record's `profile-config.md` instead.
 
-`$PROFILE` is the engine's source of truth. Everything the résumé can ever say lives there. This playbook builds it once from CV + GitHub + your input, and updates it on later runs.
+`$PROFILE` is the only career-data file read by tailoring. Everything the résumé can say must appear there. In standalone mode, this playbook builds it from CVs, résumés, GitHub data, and user input, then updates it on later runs.
 
 **Pre-req:** `/ijob-setup` has run (`"$ENGINE/tool"` exists at repo root) — needed only to parse a CV. If no CV is being parsed, `tool` is not required.
 
@@ -396,8 +387,7 @@ NO interrogation. Skip every question you can answer from inputs. Ask only when 
 
 - Missing contact field the CV shows in a non-text logo (`linkedin.com/in/...`).
 - Date ambiguity ("Recent", "current" without context).
-- Work auth — include or omit (depends on market).
-- Target domains — which tags should weigh higher in `/ijob-tailor` relevance selection (data / backend / frontend / devops / security / ml ...).
+- Target domains, meaning which tags should weigh higher in `/ijob-tailor` relevance selection (`data`, `backend`, `frontend`, `devops`, `security`, `ml`, and similar tags).
 
 ### 6. Derive tags
 
@@ -422,7 +412,7 @@ Set `meta.last_updated` to current ISO8601. Set `meta.source` to `"cv"`, `"githu
 
 - **No fabrication.** If CV unclear → ask, don't guess. If GitHub repo description is empty, leave it empty, don't invent.
 - **No silent delete.** Update mode keeps anything not explicitly removed. Even unused tags stay.
-- **Protect personal data.** The default `$ENGINE/inputs/profile.json` path is gitignored. For an external `$PROFILE`, run the remote warning in main §2 (*Pick the mode*), before the first write. Never log the profile or send it anywhere except as context for the active LLM session.
+- **Protect personal data.** The default `$ENGINE/inputs/profile.json` path is gitignored. For an external `$PROFILE`, give the privacy warning in main §2 (*Pick the mode*) before the first write. Never log the profile or send it anywhere except as context for the active LLM session.
 
 ## Failure modes
 

@@ -22,8 +22,6 @@ Both binaries are gitignored, so they must be fetched per machine.
 
 ## Bootstrap procedure
 
-> Invoked as `/ijob-setup`. Older docs call this `/setup`; the playbook is the same.
-
 Fetches latest stable `tool` (ATS scorer) and `tectonic` (LaTeX compiler) for the current OS+arch. Idempotent — re-running upgrades to newest stable.
 
 No `git`, no `gh`, no package managers required. `curl` only. Windows 10+ ships `curl.exe` + `tar.exe` by default; macOS/Linux ship both.

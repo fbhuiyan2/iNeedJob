@@ -406,8 +406,7 @@ Never invent a referee, an email, or a title. This is the no-fabrication rule at
 
 ### 2f. Cover letter — decided up front, never at the end
 
-The cover-letter decision is made **before any work starts**. It is the last thing
-resolved in §2 and the last thing said before §3 begins.
+The cover-letter decision is made **before tailoring starts**. URL intake and metadata extraction may already be complete. It is the last setting resolved in §2 and the last thing said before §3 begins.
 
 Order inside §2: intake → URLs fetched if any (§2a) → metadata → flags (§2b–§2e) →
 **this decision** → echo the resolved settings → §3.
@@ -474,7 +473,7 @@ Record the final selection in `run.json.selected_modules[]` for the snapshot.
 
 ### 4a. Read the style examples first
 
-Read whatever sits in the example directories resolved in §1. A PDF converts with `"$ENGINE/tool" <file> --md <out>.md`; DOCX, TXT and MD read directly. Convert into a scratch directory, and note that `--md` refuses to overwrite an existing path (§6) — it silently writes `<name>-2.md` instead. Empty or missing directory: skip silently, this is optional and common.
+Read whatever sits in the example directories resolved in §1. Convert PDF and DOCX files with `"$ENGINE/tool" <file> --md <out>.md`; read TXT and MD directly. Convert into a private scratch directory, and note that `--md` refuses to overwrite an existing path (§6). It silently writes `<name>-2.md` instead. Remove the scratch directory after the run. An empty or missing example directory is normal and should be skipped silently.
 
 **These are style references, never content sources.** Take from them: tone and register, how sections are named and ordered, bullet rhythm (length, whether they open with a verb, how often a number appears), how much detail one item gets, and what the person chooses to leave out.
 
@@ -535,7 +534,7 @@ Two résumé moves that are not fabrication and that agents routinely over-refus
 protected by is the gap report, and it stays calibrated to direct evidence.
 
 ### Required structure
-- Section order comes from the chosen template (§2c), not from this list. The default template produces: Header, Summary, Skills, Projects, Experience, Education, Certifications. Skip any section with no profile data.
+- Section order comes from the chosen template (§2c), not from this list. The default template produces Header, Summary, Skills, Projects, Experience, and Education. It includes a commented Certifications example that is not part of the default expected structure. Skip any active section with no profile data.
 - Single column. Page budget per `--pages`, default 1.
 - `\rsection{...}` for section headings (defined in the template).
 - Categorized Skills: `Languages / Frameworks / Tools / Domains`. Tier 1 gazetteer reads these. List concrete tool names the profile genuinely supports.
@@ -865,7 +864,13 @@ the run, not a licence to ask now: say so plainly, ship the gap report, and tell
 
 ### 11d. Cover letter rules
 
-**Output format.** Write `cover-letter.tex` from the chosen `--cl-template` (the flag is §2b; its value resolves by the §2c single-value rules — path first, then `$ENGINE/templates/<value>.tex.tmpl`; default `cover-letter`) and compile it to `cover-letter.pdf` with the §5 command. Also write the plain text into `recommendations.md`, or into `cover-letter.md` under `--cl-only`, so the wording is reviewable without opening the PDF. If the compile fails and cannot be fixed in two attempts, ship the Markdown alone and say the PDF failed.
+**Output format.** Write `cover-letter.tex` from the chosen `--cl-template` (the flag is §2b; its value resolves by the §2c single-value rules, path first and then `$ENGINE/templates/<value>.tex.tmpl`; default `cover-letter`). Compile it with:
+
+```bash
+"$ENGINE/tectonic" --keep-logs --outdir "$OUTDIR" "$OUTDIR/cover-letter.tex"
+```
+
+Also write the plain text into `recommendations.md`, or into `cover-letter.md` under `--cl-only`, so the wording is reviewable without opening the PDF. If the compile fails and cannot be fixed in two attempts, ship the Markdown alone and say the PDF failed.
 
 Two `moderncv` gotchas: use `newtxtext` rather than `mathptmx`, which XeTeX leaves unresolved; and the bundled template overrides `\makeletterhead` to drop the recipient block and date line, so do not add a `\recipient` call back unless you also restore the stock head (empty `\recipient` arguments abort the compile with "There's no line here to end").
 
@@ -973,7 +978,7 @@ Report the shape used in the run summary: which examples informed it, the final 
 For a recruiter or hiring manager LinkedIn / cold email DM.
 
 - **Length:** ≤ 80 words. Hard limit.
-- **Subject (only if email format):** "<Role> — <Name>, <strongest qualifier>" (e.g., "Senior Data Engineer — A. Candidate, dbt + Airflow + Snowflake"). The em dash is a subject-line separator and is exempt from the humanizer's em-dash rule, the same way date ranges are.
+- **Subject (only if email format):** "<Role>: <Name>, <strongest qualifier>" (for example, "Senior Data Engineer: A. Candidate, dbt + Airflow + Snowflake").
 - **Structure:**
   1. One sentence naming role + company + how you found it (LinkedIn / company page / referral). Skip the "how" if unknown.
   2. One sentence on the single strongest evidence match (one project, one quantification).

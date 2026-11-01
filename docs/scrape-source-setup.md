@@ -4,7 +4,7 @@
 > creating accounts, which only a person can do. If you are setting things up
 > generally, start with the [README](../README.md) instead.
 
-**The short version:** create one free [OpenWeb Ninja](https://rapidapi.com/)
+**The short version:** create one free [OpenWeb Ninja](https://www.openwebninja.com/)
 account, subscribe to the free tier of each of the three APIs named below
 (separately — one key, three quotas), and paste the key into
 `inputs/secrets.env`. That is enough to run `/ijob-scrape`.
@@ -13,13 +13,12 @@ How to get credentials for each discovery source. Every source here is free and
 requires no credit card — that is the standing constraint, and anything that fails it
 is listed at the bottom with the reason.
 
-Credentials live in **`inputs/secrets.env`**, which is gitignored (`inputs/*`) and
-should be `chmod 600`. Nothing here is ever committed, logged outside the repo, or
-sent anywhere except the source it authenticates to.
+Credentials live in **`inputs/secrets.env`**, which is gitignored. The scripts do not intentionally print or persist the key elsewhere. It is sent only in authentication headers to the configured API. After creating the file, restrict its permissions without printing its contents:
 
 ```bash
 # inputs/secrets.env
 OWN_API_KEY=ak_...
+chmod 600 inputs/secrets.env
 ```
 
 ---
@@ -28,7 +27,7 @@ OWN_API_KEY=ak_...
 
 | Source | Notes |
 |---|---|
-| **Direct employer boards** | Public JSON APIs. No key, no account, unlimited. Already working via `scripts/fetch_posting.py` |
+| **Known posting URLs on supported employer boards** | No key or account. `scripts/fetch_posting.py` retrieves a posting after you provide its URL. Employer-board discovery is not implemented. |
 | **LinkedIn via JobSpy** | No account, no key, but **off by default and opt-in per site** — see the JobSpy section below. Not the same thing as a LinkedIn API |
 
 ---
@@ -86,7 +85,7 @@ and it is how they would contact you before imposing a quota.
 
 Free, email signup, **no credit card**. This is what reaches the employers whose own
 job boards block us — UIUC, UIC, College of DuPage, Illinois State, Northwestern,
-PNNL, Sandia, Oak Ridge, INL. Measured: `scrape-probes/openweb-ninja.md`.
+PNNL, Sandia, Oak Ridge, INL. This source was tested against the listed employers.
 
 **Getting the key, step by step:**
 
@@ -104,9 +103,7 @@ PNNL, Sandia, Oak Ridge, INL. Measured: `scrape-probes/openweb-ninja.md`.
 *key* is per account and the same string works for all three, but the *free tier is
 per API* and does not exist until you subscribe to that API. A key that works
 perfectly against JSearch returns `403 "You are not subscribed to this API"` from
-Real-Time Indeed Data until you press Subscribe there too — and a 403 is not billed,
-so the symptom is a source that silently never returns anything rather than an error
-you would notice.
+Real-Time Indeed Data until you press Subscribe there too. A 403 is not billed. The client reports which subscription is missing.
 
 Each subscription carries **its own 200 requests/month** (and 1,000/hour). They are
 not pooled and not redundant:

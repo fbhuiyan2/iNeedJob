@@ -1,4 +1,7 @@
 Senior Data Engineer
+Example Company
+City, State or Remote
+Posting URL: https://example.com/job
 
 About the role:
 We are building data and AI-driven systems and need someone to own ingestion,

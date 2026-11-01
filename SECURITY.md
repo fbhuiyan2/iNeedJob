@@ -4,9 +4,11 @@
 
 This repo is Markdown playbooks, LaTeX templates, two bundled binaries fetched by `/ijob-setup`, and a handful of standard-library Python scripts. There's no server and no auth. It does make network calls at runtime: fetching a posting from a URL, querying a job API with a key from `inputs/secrets.env`, running the opt-in JobSpy scrapers through `uv`, and reading a public GitHub profile during `/ijob-profile`.
 
+Personal files are stored locally under gitignored paths by default. The selected agentic LLM may still send CV, profile, job-description, and generated text to its model provider as session context. Review the provider's retention and privacy settings before using sensitive information.
+
 Security-relevant concerns in scope:
 
-- **Profile data leakage.** `profile.json` is gitignored — but if any playbook ever writes profile contents into a tracked file or a network request, that's a bug. Report it.
+- **Profile data leakage.** `profile.json` is gitignored. If a playbook writes profile contents into a tracked file or sends them to an unrelated network service, that is a bug. Sending the content to the model provider selected by the user is expected processing for the active session.
 - **Command injection via JD.** `/ijob-tailor` reads JD text and shells out. If a crafted JD can cause arbitrary command execution, report it.
 - **LaTeX-side injection.** If a profile field can be crafted to escape the template and execute shell-escape commands during Tectonic compile, report it.
 - **Supply chain.** If a `/ijob-setup` download URL can be tricked into fetching a different binary, report it. Same for `scripts/_jobspy_runner.py`, which resolves a third-party package through `uv run --with` at call time.

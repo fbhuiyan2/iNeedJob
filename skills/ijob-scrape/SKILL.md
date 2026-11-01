@@ -87,7 +87,7 @@ Then turn the sentence into flags. Everything the user says on the day layers **
 | "hybrid is fine" | `--work-mode remote,hybrid` |
 | "in Illinois", "Chicago area" | `--state IL` (a city is not a column — add `--location chicago`) |
 | "this week" / "last month" | `--since 7` / `--since 30` |
-| "postdocs", "faculty jobs", "no lecturer posts" | `--role postdoc` / `--role faculty` / `--not lecturer` |
+| "postdocs", "faculty jobs", "no lecturer posts" | `--role postdoc` / `--role faculty` / `--not-title lecturer` |
 | "at national labs", "universities" | `--sector national_lab` / `--sector university` |
 | "at Argonne" | `--employer argonne` |
 | "machine learning jobs" | `--kw "machine learning"` |
@@ -213,9 +213,9 @@ user has two to look at, and the shortlist will show both. Use the keys from
 `ingest`'s own `keys` array when marking, never a key you recomputed — a split
 record is not under the key you would derive.
 
-Each search arm takes `--pages N` (default 3, ~10 results a page, **one request each**), `--dry-run` to show the call and spend nothing, and `--no-store` to print without writing. All of them write every record straight into the corpus and print one JSON line per posting **without the body** — so read the output freely; it will not fill the context with posting text.
+The metered `search_own.py` arms take `--pages N` (default 3, about 10 results per page and one billed request per page), `--dry-run`, and `--no-store`. JobSpy uses `--results N` instead of `--pages`. Search commands store each record in the corpus and print compact JSON without the posting body, so the output does not fill the context with posting text.
 
-**Quota is billed per page, not per call.** `--pages 3` is one HTTP call and three requests against the month. Neither API returns a remaining-quota header, so the ledger in the corpus is the only guard. The scripts reserve before calling and record actual spend after; if one refuses to run because the month is spent, that is working correctly — say so and switch to selection.
+**Quota is billed per page, not per call.** `--pages 3` is one HTTP call and three requests against the monthly allowance. The APIs do not return a remaining-quota header, so the local ledger is a best-effort count. The script checks the remaining local budget before calling and records spend after the response. An interrupted request can make the ledger undercount vendor usage. If the script refuses to run because the local budget is spent, switch to selection.
 
 **JobSpy is opt-in, per site, and stays that way.** `$SJ status` reports both sites with their limits and recent request counts. If a site is not enabled, do **not** enable it to satisfy a request — `enable --site X` exists so the user reads that site's ToS warning and decides (`docs/scrape-source-setup.md`). Enabling Indeed says nothing about LinkedIn.
 
@@ -289,12 +289,15 @@ value it could be compared against**, which is why the shortlist used to put
 "Scientist I, Biopharmaceutics" at the top of a computational-materials search
 and had no way to notice.
 
-`score_fit.py` scores what survived with the real ATS scorer, against
-`inputs/profile-score.pdf` — the whole profile, every bullet, no selection
-(`/ijob-profile` §7a builds it). Pipe `select` straight into it:
+Before scoring, rebuild `$SCOREPDF` from the resolved `$PROFILE`. This keeps external profiles and manually updated profiles synchronized:
 
-Resolve the floor **before** the pipe, and keep it in `$FLOOR` — §6 needs the
-same number, and nothing re-scores:
+```bash
+python3 -I "$ENGINE/scripts/profile_pdf.py" --profile "$PROFILE" --out "$SCOREPDF"
+```
+
+If the rebuild fails, report it and use the TF-IDF-only fallback below. Otherwise, `score_fit.py` scores what survived against the whole-profile PDF, with every bullet and no selection. Pipe `select` straight into it, resolving
+the floor **before** the pipe and keeping it in `$FLOOR` — §6 needs the same
+number, and nothing re-scores:
 
 ```bash
 # A fixed path, not mktemp: shell state does not survive between commands,
@@ -344,7 +347,7 @@ the line above and let the user decide.
 
 **If `$SCOREPDF` does not exist**, say so, rank by TF-IDF alone, and apply no
 floor — never invent one from the cosine number. Offer the one-line fix:
-`python3 -I "$ENGINE/scripts/profile_pdf.py"`, about a second. §6 still needs
+`python3 -I "$ENGINE/scripts/profile_pdf.py" --profile "$PROFILE" --out "$SCOREPDF"`, about a second. §6 still needs
 `$RANKED`, so write it from `select` alone and set `FLOOR=0`:
 
 ```bash

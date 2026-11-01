@@ -4,8 +4,8 @@
     "last_updated": "2026-01-01T00:00:00Z",
     "source": "cv,github,manual",
     "counts": {
-      "publications_total": 0,
-      "talks_total": 0
+      "publications_total": 2,
+      "talks_total": 1
     }
   },
   "identity": {
@@ -17,8 +17,7 @@
       "linkedin": "https://linkedin.com/in/janedoe",
       "github": "https://github.com/janedoe",
       "website": "https://janedoe.dev"
-    },
-    "work_authorization": ""
+    }
   },
   "summary_seeds": [
     "5 years building data pipelines in Python and SQL",

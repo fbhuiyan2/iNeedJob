@@ -98,9 +98,16 @@ These are what keep a resume machine-readable. Break them and the ATS gate fails
 
 ## Checking a template before you rely on it
 
+The commands below are for macOS, Linux, or WSL. Test with representative content rather than an empty frame.
+
 ```sh
-./tectonic --keep-logs --outdir /tmp/t templates/my-layout.tex.tmpl
-grep -o "Output written.*" /tmp/t/my-layout.tex.log     # page count
-./tool /tmp/t/my-layout.tex.pdf --json | head -30       # must show no severity:fail
-./tool /tmp/t/my-layout.tex.pdf --md /tmp/t/out.md      # header first? sections in order?
+mkdir -p /tmp/resume-template-check
+cp templates/my-layout.tex.tmpl /tmp/resume-template-check/my-layout.tex
+./tectonic --keep-logs --outdir /tmp/resume-template-check /tmp/resume-template-check/my-layout.tex
+grep -o "Output written.*" /tmp/resume-template-check/my-layout.log
+./tool /tmp/resume-template-check/my-layout.pdf --json
+rm -f /tmp/resume-template-check/out.md
+./tool /tmp/resume-template-check/my-layout.pdf --md /tmp/resume-template-check/out.md
 ```
+
+The JSON output must contain no `severity: fail`. Read `out.md` and confirm that the header appears first, section order is correct, and no words were collapsed or split by hyphenation.

@@ -13,7 +13,7 @@ body:
     attributes:
       label: What problem does this solve?
       description: One paragraph. The pain you have today.
-      placeholder: "The accept gate ships at score ≥ 85, but for senior roles I want a higher bar without editing the playbook."
+      placeholder: "I use a custom research template, but the current template check does not explain which macros are required for structural verification."
     validations:
       required: true
 
@@ -22,7 +22,7 @@ body:
     attributes:
       label: Proposed change
       description: Be specific. Which file, which section, what the new behavior is.
-      placeholder: "Add a `--target N` flag to /ijob-tailor that overrides the default 85 floor. Doc it in skills/ijob-tailor/SKILL.md §2b."
+      placeholder: "Add a compatibility checklist to templates/README.md and reference it from the template-selection section of /ijob-tailor."
     validations:
       required: true
 

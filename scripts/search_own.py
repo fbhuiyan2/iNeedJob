@@ -28,7 +28,8 @@ Three subcommands because the APIs are good at different jobs (measured):
 Quota is billed per PAGE, not per call: --pages 3 is one HTTP call and three
 requests against the month. Neither API returns a remaining-quota header, so
 the ledger in the corpus (jobstore.py) is the only guard against overspending.
-Every run reserves budget before calling and records actual spend after.
+Every run checks the remaining budget before calling and records actual spend
+after, so a call interrupted mid-flight can leave the ledger undercounting.
 
 Reads OWN_API_KEY from the environment, or from inputs/secrets.env.
 Writes one JSON line per posting to stdout (without the body, so an agent can

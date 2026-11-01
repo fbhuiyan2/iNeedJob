@@ -10,7 +10,9 @@
 # it from this template — it is a few lines, and it is the one thing that
 # tells the engine where a profile kept outside the repo lives.
 #
-# ~ and $HOME both expand. Relative paths resolve against the engine repo root.
+# ~ and $HOME both expand. Values stored in this file resolve relative to the
+# engine repo root. A one-off relative path supplied in a user request resolves
+# from that request's working directory.
 
 # --- Profile -------------------------------------------------------------
 # Where profile.json lives, and where /ijob-profile writes it.
@@ -65,7 +67,9 @@ cover_letter_template: "cover-letter"
 
 # --- Output --------------------------------------------------------------
 # Empty = per-run rule: next to the JD file if one was given, otherwise
-# ./resume-agent-output_{company}-{role}/ in the current directory.
+# ./resume-agent-output_{company}-{role}/ in the current directory. If that
+# destination is inside the public engine repo, output falls back to
+# $HOME/job-applications/{company}/{role}-{date}/.
 output_root: ""
 
 # --- Defaults ------------------------------------------------------------

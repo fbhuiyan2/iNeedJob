@@ -1,6 +1,6 @@
 # Verb bank — strong, ATS-friendly action verbs
 
-Lead every bullet with one of these. Past tense for completed work, present tense only for current ongoing roles. No "Responsible for", no "Worked on", no "Helped with" — those are weak.
+Lead accomplishment bullets in experience, projects, leadership, and similar narrative sections with a strong verb. Past tense for completed work, present tense only for current ongoing roles. Publication citations, awards, references, and other label-style list items are exempt. Avoid weak openers such as "Responsible for", "Worked on", and "Helped with".
 
 ## Built / shipped
 Built, Shipped, Designed, Developed, Engineered, Implemented, Launched, Released, Delivered, Created, Constructed, Authored, Wrote, Coded, Programmed, Prototyped.

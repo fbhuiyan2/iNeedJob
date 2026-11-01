@@ -2,11 +2,7 @@
 
 > **This document is written for an agent, not for a person.**
 >
-> If you are a human setting this up, you do not need any of it. Start a session
-> in any harness and say *"clone this repo and set it up for me"* — that is the
-> entire user-facing instruction, and the [README](../README.md) shows what happens
-> next. Everything below is the detail an agent needs when the simple path is
-> not enough.
+> If you are a human setting this up, start with the [README](../README.md). In a supported agentic harness, you can usually say *"clone this repo and set it up for me"*. This file contains the advanced details needed when that path is not enough.
 
 [`AGENTS.md`](../AGENTS.md) is the entry point and covers the ordinary case in four
 steps. **Read this file instead when one of these applies:**
@@ -19,9 +15,7 @@ steps. **Read this file instead when one of these applies:**
 | The user wants job discovery and needs credentials | [Step 7](#step-7--job-sources-only-if-you-want-the-job-finding-half) |
 | Something is broken | [Troubleshooting](#troubleshooting) |
 
-Makes all five commands — `/ijob-tailor`, `/ijob-profile`, `/ijob-setup`,
-`/ijob-scrape`, `/ijob-shortlist` — work **from any directory**, in any harness,
-on any machine. The playbooks stay in this repo, a thin skill layer in the home
+The setup makes all five playbooks available from any working directory in supported harnesses. Other agents can read the Markdown playbooks directly. The playbooks stay in this repo, a thin skill layer in the home
 directory points at them, and the user's personal profile lives somewhere
 private.
 
@@ -108,7 +102,7 @@ What it installs:
 └── ijob-setup.md
 ```
 
-Each skill is self-contained: it resolves the engine path and the profile in its own §1, then carries the full procedure inline. No indirection, nothing to keep in sync.
+The main skills resolve the engine path and profile themselves. `/ijob-shortlist` is the intentional exception: it is a thin selection-only wrapper around `/ijob-scrape`, so both playbooks must be installed together.
 
 Frontmatter must satisfy both tools: `name` (lowercase, hyphenated, **matching the directory name**) and `description` are required; unknown fields are ignored. Write the description specifically — it is how OpenCode decides whether to invoke the skill.
 
@@ -143,7 +137,7 @@ description: Bootstrap the resume-tailor-agent binaries (open-ATS scorer + Tecto
 Invoke the `ijob-setup` skill and follow it exactly. Arguments: $ARGUMENTS
 ```
 
-Without these, OpenCode still works — you just say "tailor my resume to this JD" and the agent invokes the skill by description.
+Use the same three-line pattern for `ijob-scrape` and `ijob-shortlist`, changing the description and invoked skill name. Without these shims, OpenCode can still invoke an available skill by description. If OpenCode has external Claude skills disabled, install the skills into its native skill directory rather than relying on `~/.claude/skills`.
 
 ## Step 5 — environment variables (all optional)
 
@@ -151,7 +145,7 @@ Nothing is required. The skills resolve everything themselves:
 
 - **Engine path** is baked in by `install.sh`. Re-run it if you move or re-clone the repo.
 - **Profile** defaults to `inputs/profile.json`, which is gitignored. To keep it elsewhere — a private repo, a synced folder — set `profile:` in `inputs/paths.yaml`.
-- **Output** is decided per run: next to the JD file if you gave a path, otherwise `./resume-agent-output_{company}-{role}/` in the current directory. Never inside the engine repo.
+- **Output** is decided per run: next to the JD file if you gave a path, otherwise `./resume-agent-output_{company}-{role}/` in the current directory. If that path is inside the engine repository, the run falls back to `$HOME/job-applications/{company}/{role}-{date}/`.
 
 Override any of them only if you want to:
 
@@ -223,13 +217,13 @@ from turning them on for you.
 
 ```sh
 git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
-git clone git@github.com:<you>/<your-private-profile-repo> ~/.claude/skills/<your-profile-skill>
+git clone git@github.com:<you>/<your-private-profile-repo> ~/private/career-record
 bash ~/soft/resume-tailor-agent/skills/install.sh
 
 cp ~/soft/resume-tailor-agent/inputs/paths.example.yaml \
    ~/soft/resume-tailor-agent/inputs/paths.yaml
 # edit it: set `profile:` (and `profile_config:` if you use derived mode)
-# to the paths inside the private repo you just cloned
+# to the paths inside ~/private/career-record
 
 # then in an agent session: /ijob-setup
 ```
@@ -239,7 +233,7 @@ Two things a clone does not carry, both by design:
 - **`inputs/paths.yaml`** — `inputs/` is gitignored, so this never travels. It is the file that tells the engine your profile lives in the private repo rather than at the default `inputs/profile.json`. Skip it and `/ijob-tailor` will not find your profile.
 - **The binaries** — fetched per machine by `/ijob-setup`.
 
-Cloning the private repo into `~/.claude/skills/` is what makes it load as a skill in Claude Code and OpenCode. The resume engine itself does not care where it sits, as long as `paths.yaml` points at it — a symlink from `~/.claude/skills/` to a clone kept elsewhere works fine.
+The private repository is data, not an agent skill. It can live in any private location. The resume engine only needs `inputs/paths.yaml` to point to the profile and optional profile configuration.
 
 ---
 
@@ -264,7 +258,7 @@ mix freely with plain language in the same line.
 | `/ijob-setup` | Fetch or upgrade the two binaries. Once per machine. |
 | `/ijob-profile` | Build or rebuild `profile.json` and your search defaults. Re-run after a new paper, project or role. |
 | `/ijob-tailor` | A JD in, a tailored PDF and gap report out. Accepts a paste, a path, a URL, several URLs, or a folder `/ijob-scrape` prepared. |
-| `/ijob-scrape` | Find postings, store them locally, rank them, hand the ones you pick to `/ijob-tailor`. Costs metered quota. |
+| `/ijob-scrape` | Find postings, store them locally, rank them, and hand selected jobs to `/ijob-tailor`. API discovery uses metered quota; optional JobSpy sources use the local network connection. |
 | `/ijob-shortlist` | The same narrowing and ranking with discovery off. No network, no quota, run it as often as you like. |
 
 **What `/ijob-tailor` can vary**
@@ -328,8 +322,7 @@ resume_template:
 
 `default` and `default_2page` are the two reserved keys — they are what `--pages` selects between. Everything else is a name you can ask for. Leave the key out entirely and the same rule runs against the bundled layouts: `resume` at one page, `resume-2page` above.
 
-If you pass neither `--cover` nor `--no-cover`, `/ijob-tailor` asks once — **before it does any
-work at all**, not after the résumé is built:
+If you pass neither `--cover` nor `--no-cover`, `/ijob-tailor` asks once before tailoring, module selection, or document generation. URL intake and metadata extraction may happen first:
 
 ```
 Want a cover letter and/or recruiter outreach draft for this role? [Y/n]

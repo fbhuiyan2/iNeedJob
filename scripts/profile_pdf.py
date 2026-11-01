@@ -194,9 +194,9 @@ def bullets(items):
 def render_header(profile):
     """Name, then contacts, then every other scalar on `identity`.
 
-    The last part matters: a fixed key list dropped `publishes_as` and
-    `work_authorization` outright, and the omission hid behind a fidelity
-    check because the publication list happened to repeat the same string.
+    The last part matters: a fixed key list dropped fields such as
+    `publishes_as`, and the omission could hide behind a fidelity check when
+    another section happened to repeat the same string.
     """
     ident = profile.get("identity") or {}
     contact = ident.get("contact") or {}

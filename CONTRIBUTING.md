@@ -11,7 +11,7 @@ Thanks for showing up. This project is a playbook system — the agent IS the en
 | Verb bank additions | `references/verb-bank.md` | Action verbs grouped by intent. No "leverage". |
 | LaTeX template | `templates/*.tex.tmpl` | Single-column, ATS-safe. Test the output before PR: it must compile, stay within its page budget, and show no `severity: fail` from the scorer. |
 | Bug reports / feature requests | [Issues](../../issues) | Use the templates. |
-| Real-world test JDs | Discussion | Especially non-tech roles. Helps stress-test no-fabrication. |
+| Real-world test JDs | [Discussions](../../discussions) | Especially non-tech roles. Helps stress-test no-fabrication. |
 | Docs / typos | Anywhere | Lowest barrier. |
 
 ## What this project does NOT want
@@ -30,7 +30,7 @@ Issues labelled [`good first issue`](../../issues?q=is%3Aissue+is%3Aopen+label%3
 1. Open an issue first if your change is non-trivial (rule change, new playbook, template restructure). Avoids wasted work.
 2. Fork → branch (`feat/short-name` or `fix/short-name`) → PR against `main`.
 3. **Test against a real run.** If you touched `skills/ijob-tailor/SKILL.md`, run `/ijob-tailor` end-to-end on at least one JD and confirm score + page budget respected. Paste the result in the PR.
-4. **Profile data stays out of commits.** `profile.json`, `inputs/`, `test/`, and any `resume-agent-output_*/` folder are gitignored for a reason — don't `-f` them in.
+4. **Personal data stays out of commits.** Never force-add `profile.json`, credentials, posting corpora, test data, or generated application folders. The tracked `inputs/*.example.*` files are documentation and may be updated.
 5. **No AI-written PR descriptions.** This repo's whole point is anti-AI-filler. Write your PR like a human. Run the [humanizer](references/blacklist.md) over it if unsure.
 
 ## Commit style
@@ -48,13 +48,17 @@ No "Co-authored-by: Claude" or similar. Commits read like a human wrote them, be
 
 ## Local check before PR
 
+Run the deterministic checks relevant to your change:
+
 ```sh
-# Run /ijob-setup first if you do not have the binaries.
-/ijob-tailor                          # pick a JD from inputs/ or paste one
-# Verify the run's resume.pdf is within the page budget, ATS gate passed, score >= 85
+python3 -c "import ast,glob; [ast.parse(open(f).read()) for f in glob.glob('scripts/*.py')]"
+bash -n skills/install.sh
+python3 -I scripts/jobstore.py --root /tmp/resume-tailor-check stats
 ```
 
-If you don't have an agentic LLM tool to run the playbooks, say so in the PR and a maintainer will spot-check.
+If you changed the tailoring playbook or a template, run `/ijob-tailor` from an agent session on at least one JD. Confirm that the PDF stays within the selected page budget, structural verification passes, and `ats.score` meets the configured formatting floor. The JD-match score is reported but never gated.
+
+If you do not have an agentic LLM tool to run the playbooks, say so in the PR and a maintainer will spot-check.
 
 ## Questions
 
