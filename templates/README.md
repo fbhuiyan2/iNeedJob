@@ -1,6 +1,6 @@
 # Templates
 
-Every file here is **one example layout, not a required format.** Copy one, rewrite it for your field, and point `/ijob-tailor` at it with `--template`.
+The bundled files are example layouts, not required formats. Use one as provided, adapt one for your field, or ask your agent to convert the design of an existing résumé into a compatible template. Then tell `/ijob-tailor` which template to use.
 
 | File | Shape |
 |---|---|
@@ -15,6 +15,10 @@ Every file here is **one example layout, not a required format.** Copy one, rewr
 So a different field just means a different template. Reorder the sections, rename them, add ones that don't exist here — the gate follows the file.
 
 ## Using your own
+
+If you already have a résumé whose design you want to keep, give it to the agent and ask it to reproduce that layout as a `.tex.tmpl` file for this repository. The conversion must preserve the ATS requirements below. Review the generated template before using it for applications.
+
+You can keep a custom template inside this repository or at any private path:
 
 ```
 /ijob-tailor --template my-layout                 # -> templates/my-layout.tex.tmpl

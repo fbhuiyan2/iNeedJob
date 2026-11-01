@@ -299,7 +299,9 @@ same number, and nothing re-scores:
 ```bash
 # A fixed path, not mktemp: shell state does not survive between commands,
 # so §6 has to be able to name this file without having seen $RANKED set.
-RANKED="${TMPDIR:-/tmp}/ijob-ranked.jsonl"
+# Suffixed with a checksum of $ROOT: one file per corpus. $ROOT sits inside
+# $ENGINE today, so that is also one per clone.
+RANKED="${TMPDIR:-/tmp}/ijob-ranked-$(printf %s "$ROOT" | cksum | cut -d' ' -f1).jsonl"
 FLOOR=$(python3 -I -c "import json,sys
 try: print(json.load(open(sys.argv[1]))['shortlist']['fit_floor'])
 except Exception: print(35)" "$PREFS")
@@ -346,7 +348,7 @@ floor — never invent one from the cosine number. Offer the one-line fix:
 `$RANKED`, so write it from `select` alone and set `FLOOR=0`:
 
 ```bash
-RANKED="${TMPDIR:-/tmp}/ijob-ranked.jsonl"; FLOOR=0
+RANKED="${TMPDIR:-/tmp}/ijob-ranked-$(printf %s "$ROOT" | cksum | cut -d' ' -f1).jsonl"; FLOOR=0
 $JS --root "$ROOT" select <the same flags> --limit 25 --profile "$PROFILE" > "$RANKED"
 ```
 
@@ -366,7 +368,13 @@ the JSON for reference; do not floor on it and do not put it in the table.
 
 **Present the shortlist as a compact table, not a wall of text.** Drop the
 column to `select`'s `score` only when §5b could not run, and say which one is
-on screen:
+on screen.
+
+**The `#` column is a position in `$RANKED`**, counting only the records the
+floor lets through (`fit` null or at least `$FLOOR`), in file order. Never
+number the rows any other way — §6 turns the numbers the user picks back into
+postings by exactly that rule, so a table drawn in a different order hands
+over the wrong jobs.
 
 ```
  #  Employer                      Title                                  Where          Posted  Fit
@@ -390,39 +398,45 @@ that could not be reached even by a perfect résumé.
 
 ## 6. The handoff to /ijob-tailor
 
-**Many at once — the normal case.** The user picks 20 off the shortlist; pipe
-the selection straight into `brief` and hand `/ijob-tailor` the batch root:
+**Many at once, the normal case.** The user picks rows by number. Turn those numbers back into records from `$RANKED` — by the same rule the table was numbered with (§5b) — and pipe them into `brief`, then hand `/ijob-tailor` the batch root:
 
 ```bash
 DATE=$(date +%Y%m%d)
 BATCH="job-applications_$DATE"            # the user's cwd, never inside $ENGINE
-
-# $RANKED is what §5b already wrote — do not re-run select and do not
-# re-score. Filter on $FLOOR, the same number the table was drawn with, not
-# on the stored `below_min`: if the user said "floor 20" or "show all" and
-# then picked a posting, `below_min` still carries the old answer and would
-# drop the job they just chose. Records with fit null pass through — the
-# scorer could not measure them, which is not a reason to refuse them.
-RANKED="${TMPDIR:-/tmp}/ijob-ranked.jsonl"
-python3 -I -c "import json,sys
-floor=float(sys.argv[1])
-for l in sys.stdin:
-    r=json.loads(l)
-    if r.get('fit') is None or r['fit'] >= floor: sys.stdout.write(l)" \
-  "$FLOOR" < "$RANKED" \
-  | $JS --root "$ROOT" brief --keys - --batch "$BATCH"
+RANKED="${TMPDIR:-/tmp}/ijob-ranked-$(printf %s "$ROOT" | cksum | cut -d' ' -f1).jsonl"
+ROWS="1,3,7"            # the # values the user chose: "1, 3", "1-3,7" or "all"
+PICKED="${TMPDIR:-/tmp}/ijob-picked-$(printf %s "$ROOT" | cksum | cut -d' ' -f1).jsonl"
+trap 'rm -f "$PICKED"' EXIT         # gone on success, failure or Ctrl-C
+python3 -I -c "import json,re,sys
+floor=float(sys.argv[1]); spec=sys.argv[2].strip()
+shown=[l for l in sys.stdin
+       if json.loads(l).get('fit') is None or json.loads(l)['fit'] >= floor]
+if spec.lower()=='all':
+    want=range(1,len(shown)+1)
+else:
+    want=[]
+    for part in filter(None,(p.strip() for p in spec.split(','))):
+        m=re.fullmatch(r'(\d+)(?:\s*-\s*(\d+))?',part)
+        if not m: sys.exit('not a row number: %r' % part)
+        a=int(m.group(1)); b=int(m.group(2) or a)
+        a,b=min(a,b),max(a,b)
+        want.extend(range(a,b+1))
+    want=list(dict.fromkeys(want))
+bad=[n for n in want if not 1<=n<=len(shown)]
+if not want: sys.exit('no rows picked')
+if bad: sys.exit('no such row: %s (the table has %d)' % (bad,len(shown)))
+for n in want: sys.stdout.write(shown[n-1])" \
+  "$FLOOR" "$ROWS" < "$RANKED" > "$PICKED" \
+  && $JS --root "$ROOT" brief --keys - --batch "$BATCH" < "$PICKED"
 ```
 
-`brief --keys -` reads the same JSON lines `select` and `score_fit.py` print,
-so no key is ever copied by hand. Each posting lands in `$BATCH/{company-slug}_{role-slug}/` — the exact
-layout `/ijob-tailor` §2a builds for a URL batch — and the summary on stderr
-reports `wrote`, `missing` and **`bodyless`**. A bodyless record has no posting
-text to tailor against; re-fetch those below or drop them, but never tailor one
-silently.
+The picker writes nothing to `brief` unless every number is valid: an empty pick, a `0`, or a row past the end of the table stops it with a message, and nothing is briefed. Tell the user which number was wrong and ask again — never drop it and carry on with the rest, or the batch comes back one folder short with no explanation. Ranges and spaces are fine, `3-1` means `1-3`, and duplicates are dropped.
 
-To hand over a subset the user named rather than the whole shortlist, pass the
-keys instead: `brief --keys "li:123,id:abc" --batch "$BATCH"` — and skip the
-floor filter entirely when you do. An explicit pick outranks any floor.
+`brief --keys -` reads the JSON lines straight off the pipe, so no key is ever copied by hand. If the user names a posting that is not on screen — "and the SES one you hid" — find its `key` in `$RANKED` and pass it directly with `brief --keys "<key>"`. An explicit pick outranks the floor.
+
+The fit floor controls which postings appear in the shortlist. The user's explicit selection controls which postings are handed off. Never pass the entire ranked file after the user has chosen a subset, and do not reapply the floor to explicit picks.
+
+Each posting lands in `$BATCH/{company-slug}_{role-slug}/`, which is the layout `/ijob-tailor` §2a expects for a prepared batch. The summary on stderr reports `wrote`, `missing`, and `bodyless`. A bodyless record has no posting text to tailor against. Re-fetch it or drop it, but never tailor against a title alone.
 
 Then **continue straight into `/ijob-tailor` yourself** — do not stop and tell
 the user to type it. You are the same agent in the same session; read

@@ -2,7 +2,7 @@
 
 # Resume Tailor Agent
 
-**A pure-Markdown playbook that turns any agentic LLM into a per-job résumé tailor — no fabrication, no AI filler, no servers, no glue code.**
+**A Markdown playbook that turns an agentic LLM into a per-job résumé tailor, without fabricated experience, AI filler, servers, or glue code.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Playbook only](https://img.shields.io/badge/playbook-Markdown%20only-blue)](skills/)
@@ -20,31 +20,27 @@ By **Fakhrul Hasan Bhuiyan**.
 
 > **Interviewer:** So, why do you want this position?
 >
-> **Me:** I Need Job
+> **Applicant:** iNeedJob
 
-Find the jobs. Tailor a résumé to each one. Get an honest report of where you fall short.
+Find jobs. Tailor a résumé to each one. Decide where to apply, with an honest report of where you fall short.
 
-Drop a job description into chat and get back a one-page, ATS-safe PDF tailored to it, plus a gap report naming the requirements your profile doesn't actually meet. The engine refuses to invent experience you don't have — if you're underqualified it ships an honest score and says why, instead of stuffing buzzwords into a bullet. Optionally, it finds the postings for you too.
+Give the agent a job description, a file, or a posting URL. It returns an ATS-safe résumé tailored to that role and a gap report identifying requirements your profile does not meet. Choose a one-page or two-page layout, and add a cover letter if you want one. The engine does not invent experience. If you are underqualified, it reports the score and explains why instead of adding unsupported keywords to a bullet. It can also find and rank job postings for you.
 
-The repo is plain Markdown playbooks plus a LaTeX template. Your agent — Claude Code, OpenCode, Cursor, whichever — reads the playbooks and shells out to two bundled binaries (`tool` for ATS scoring, `tectonic` for LaTeX). One profile file is the source of truth for every résumé this engine ever produces.
+The repo contains Markdown playbooks, thin scripts, and LaTeX templates. Your agent, whether Claude Code, OpenCode, Cursor, or another supported harness, reads the playbooks and calls two downloaded binaries. `tool` handles ATS scoring, and `tectonic` compiles the LaTeX. One profile file is the source of truth for every résumé the engine produces.
 
 ---
 
-## Getting started — the whole thing, start to finish
+## Getting started
 
-Five steps. Steps 1 and 2 happen once per machine, step 3 once per person, and steps 4–5 are the loop you actually live in.
+The initial setup has three parts. Choose an agent, build your profile, and add a job source if you want the job-discovery feature. After that, find jobs or bring your own posting and generate the application documents.
 
 ### 1. Use an agent
 
-That is the whole installation instruction. This repo is a playbook *for* an
-agent — there is nothing to install by hand and no build step to run.
+You do not need to install or build the project by hand. Start a session in an agentic LLM harness with file and shell access, such as Claude Code, OpenCode, Codex, or Cursor. Then say:
 
-Start a session in any harness (Claude Code, OpenCode, Codex, Cursor, …), in any
-directory, and say:
+> Clone https://github.com/fbhuiyan2/resume-tailor-agent and set it up for me.
 
-> `https://github.com/fbhuiyan2/resume-tailor-agent` — clone this repo and set it up for me
-
-It reads [`AGENTS.md`](AGENTS.md) and does the rest:
+The agent reads [`AGENTS.md`](AGENTS.md) and handles the setup:
 
 ```
 Cloned to ~/soft/resume-tailor-agent
@@ -54,7 +50,7 @@ Installing skills -> ~/.claude/skills
 Installing skills -> ~/.codex/skills
   …and every other harness directory found under $HOME
 
-Engine path baked in: /home/you/soft/resume-tailor-agent
+Engine path configured: <directory where the repository was cloned>
 
 Fetching binaries…
   tool      14 MB  ✓   (ATS scorer)
@@ -63,9 +59,7 @@ Fetching binaries…
 Setup done. Next: /ijob-profile to build your profile.
 ```
 
-Under the hood it copies each playbook into every agent-harness skills directory
-it finds under `$HOME`, baking the clone's absolute path into each copy so the
-commands work from any directory, in whichever harness you use.
+During setup, the installer copies each playbook into the skill directories it finds under `$HOME`. It records the repository's actual location, so you can use the skills from any working directory. If your harness is not supported by the installer, the agent can still read the playbooks directly from the clone.
 
 > **Restart your harness once it finishes.** The slash commands won't appear
 > until you do. That is never a blocker — the playbooks are plain Markdown, so
@@ -77,7 +71,7 @@ commands work from any directory, in whichever harness you use.
 /ijob-profile
 ```
 
-Point it at a CV and it does the rest — parses it, offers to pull in your public GitHub repos, asks only where something is genuinely ambiguous:
+Provide one or more CVs, résumés, or career records. The agent combines the source material, offers to include relevant public GitHub repositories, and asks only when something is genuinely ambiguous. You can add freeform notes for work that is missing from the documents.
 
 ```
 Reading inputs/cv.pdf … 14 positions, 23 publications, 9 projects
@@ -90,9 +84,11 @@ Two things I couldn't infer:
 Wrote inputs/profile.json — 9 projects, 23 publications, 61 tagged bullets.
 ```
 
-Then it offers to set up your job-search defaults — the titles you want, the places, and anything to rule out. Take the defaults and tweak later, or answer five questions now. Either way it writes `inputs/search-prefs.json`.
+It then offers to set up your job-search defaults, including target titles, locations, and exclusions. You can accept the defaults and revise them later or answer the questions immediately. These preferences are saved in `inputs/search-prefs.json`.
 
-Everything personal lives in `inputs/`, which is gitignored. Nothing about you is ever committed.
+You can also provide previous résumés and cover letters as style references. The engine uses them for tone, section naming, bullet structure, organization, and level of detail. It does not treat them as sources of facts. Place them in `inputs/resume-examples/` and `inputs/cover-letter-examples/`, or configure other private directories in `inputs/paths.yaml`.
+
+By default, personal files stay in the gitignored `inputs/` directory and are not committed. You can instead point the engine to a private repository or synced directory.
 
 ### 3. Add a job source — only if you want the job-finding half
 
@@ -167,7 +163,7 @@ Each folder holds `resume.pdf`, `cover-letter.pdf`, the full posting with its ap
 | | What it's for | How often |
 |---|---|---|
 | **`/ijob-setup`** | Fetches the two binaries. Detects your OS and arch, verifies, gitignores. | once per machine |
-| **`/ijob-profile`** | Builds `profile.json` from your CV and GitHub, plus your search defaults. Re-run it when you finish a project — it diffs and confirms, never silently deletes. | once, then occasionally |
+| **`/ijob-profile`** | Builds `profile.json` from one or more CVs, résumés, career records, notes, and optional GitHub data. It also creates your search defaults. Re-run it after a new project, paper, or role. It shows the changes and never silently deletes existing information. | once, then occasionally |
 | **`/ijob-tailor`** | A job description in, a tailored PDF and a gap report out. Takes a pasted JD, a file path, a URL, several URLs, or a folder `/ijob-scrape` prepared. | per job, or per batch |
 | **`/ijob-scrape`** | Finds postings, stores them locally, ranks them against your profile, hands the ones you pick to `/ijob-tailor`. Costs metered quota. | once or twice a day |
 | **`/ijob-shortlist`** | The same narrowing and ranking, with discovery switched off. Touches no network, costs nothing. | as often as you like |
@@ -176,9 +172,9 @@ Each folder holds `resume.pdf`, `cover-letter.pdf`, the full posting with its ap
 
 ---
 
-## You don't have to remember any flags
+## Ask in plain language
 
-These are playbooks an agent reads, not command parsers. Plain language does the same work, and the two mix freely in one line:
+You do not need to learn command-line syntax. Tell the agent what you want in ordinary language:
 
 ```
 /ijob-tailor two pages, research layout, no cover letter
@@ -188,7 +184,7 @@ These are playbooks an agent reads, not command parsers. Plain language does the
 /ijob-shortlist  show me the remote ones again, but drop anything needing citizenship
 ```
 
-The flags below exist so you can see **what the playbooks actually know how to do**. Treat them as a capability list, not syntax to memorise — say any of it in your own words and the agent maps it.
+The tables below list the available options. Advanced users may use the corresponding command-line flags, but plain-language requests work the same way.
 
 <details>
 <summary><strong>What <code>/ijob-tailor</code> can vary</strong></summary>
@@ -203,7 +199,9 @@ The flags below exist so you can see **what the playbooks actually know how to d
 | Letter and outreach only, no résumé | `--cl-only` | off |
 | ATS-readiness floor (formatting only) | `--target N` | 85 |
 
-Layout names resolve against your own `resume_template` map first, then [`templates/`](templates/). If a name is ambiguous the agent asks and lists the options rather than quietly defaulting, and it echoes what it resolved before writing: *"2 pages, layout `2page`, 1 reference, cover letter on."*
+The bundled `resume` layout is designed for one page, and `resume-2page` is a research-oriented two-page layout with sections for publications, awards, and references. The page budget selects the matching bundled layout unless you request another one.
+
+You can also keep your current résumé design. Give the agent your résumé and ask it to convert the layout into a repository-compatible template. Store the resulting template anywhere you prefer, including a private directory, and name it in `inputs/paths.yaml`. Layout names resolve against your `resume_template` map first and then [`templates/`](templates/). The agent confirms the resolved layout and page budget before writing. See [`templates/README.md`](templates/README.md) for the template requirements.
 
 </details>
 
@@ -242,9 +240,9 @@ Layout names resolve against your own `resume_template` map first, then [`templa
 └── run.json              # what shipped, and why
 ```
 
-**Where it lands:** next to the JD file if you gave a path, in the batch folder if it came from `/ijob-scrape`, otherwise `./resume-agent-output_{company}-{role}/`. Set `output_root` in `inputs/paths.yaml` to force a single root. Never inside the engine repo.
+**Output location:** If you provide a JD file, the output is created beside it. Jobs selected through `/ijob-scrape` stay in the batch folder. Other runs use `./resume-agent-output_{company}-{role}/`. Set `output_root` in `inputs/paths.yaml` if you want one fixed output directory. Outputs are never written inside the engine repository.
 
-Each one ships only after passing an ATS structural verify and a coverable-gap check: anything the posting asks for that your profile genuinely supports must appear before it ships. The JD-match *score* is reported, never gated — a low one usually means the profile lacks the experience, and no rewrite fixes that honestly. When a gap can't be closed the engine ships the best attempt and writes the unresolved gaps to `recommendations.md` rather than lying.
+Each résumé must pass structural and ATS checks before it is delivered. Any job requirement that your profile supports must appear in the application materials. The JD-match score is reported but is not a pass threshold. A low score usually means that your profile lacks required experience, which cannot be fixed honestly through rewriting. The engine records unresolved gaps in `recommendations.md` rather than fabricating qualifications.
 
 ---
 

@@ -1,9 +1,9 @@
 # AGENTS.md
 
 Resume Tailor Agent turns an agentic LLM into a per-job résumé tailor. A job
-description goes in; a tailored, ATS-scored PDF, a cover letter and an honest
-gap report come out. `/ijob-scrape` is the front half: it finds the postings in the
-first place.
+description goes in; a tailored, ATS-scored PDF and an honest gap report come
+out. A cover letter and outreach draft are optional. `/ijob-scrape` is the front
+half. It finds the postings in the first place.
 
 The repo is **playbooks plus thin scripts**. Judgement lives in the Markdown
 under `skills/`; the scripts under `scripts/` only do the deterministic parts
@@ -70,12 +70,12 @@ troubleshooting. The four steps above cover everything else.
 
 | | |
 |---|---|
-| `/ijob-tailor` — job description in, résumé + cover letter out | [`skills/ijob-tailor/SKILL.md`](skills/ijob-tailor/SKILL.md) |
+| `/ijob-tailor` — job description in, résumé + gap report out; cover letter optional | [`skills/ijob-tailor/SKILL.md`](skills/ijob-tailor/SKILL.md) |
 | `/ijob-scrape` — find postings, rank them, hand them to `/ijob-tailor` | [`skills/ijob-scrape/SKILL.md`](skills/ijob-scrape/SKILL.md) |
 | `/ijob-shortlist` — narrow the postings already held, for nothing | [`skills/ijob-shortlist/SKILL.md`](skills/ijob-shortlist/SKILL.md) |
 | `/ijob-profile` — build or refresh `profile.json` | [`skills/ijob-profile/SKILL.md`](skills/ijob-profile/SKILL.md) |
 | `/ijob-setup` — fetch `tool` and `tectonic` | [`skills/ijob-setup/SKILL.md`](skills/ijob-setup/SKILL.md) |
-| The order a new user goes in | `/ijob-setup` → `/ijob-profile` → `/ijob-scrape` → `/ijob-tailor` |
+| The order a new user goes in | Tailoring only: `/ijob-setup` → `/ijob-profile` → `/ijob-tailor`. With discovery: add `/ijob-scrape` before `/ijob-tailor`. |
 | Where to put paths that live outside the repo | [`inputs/paths.example.yaml`](inputs/paths.example.yaml) |
 | Job-source credentials, free tiers, what was rejected | [`docs/scrape-source-setup.md`](docs/scrape-source-setup.md) |
 

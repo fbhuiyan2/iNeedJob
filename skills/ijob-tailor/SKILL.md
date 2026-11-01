@@ -578,7 +578,7 @@ Only mirror when the underlying experience is genuine. Mirroring without evidenc
 ## 5. Compile
 
 ```
-"$ENGINE/tectonic" --keep-logs --outdir $OUTDIR $OUTDIR/resume.tex
+"$ENGINE/tectonic" --keep-logs --outdir "$OUTDIR" "$OUTDIR/resume.tex"
 ```
 
 - Exit 0 → proceed to §6.
@@ -626,8 +626,8 @@ Do not flatten `\rsubgroup` back to a flush-left `\textbf{...}`: at the margin i
 ## 6. Structural verify (via `--md`)
 
 ```
-rm -f $OUTDIR/resume.md
-"$ENGINE/tool" $OUTDIR/resume.pdf --md $OUTDIR/resume.md
+rm -f "$OUTDIR/resume.md"
+"$ENGINE/tool" "$OUTDIR/resume.pdf" --md "$OUTDIR/resume.md"
 ```
 
 **The `rm -f` is not optional.** `tool --md` never overwrites: given a path that already exists it writes `resume-2.md`, `resume-3.md`, ... and prints `wrote <actual path>` while returning 0. Skip the delete and every re-verify after a repair reads the *first* iteration's extraction, so a fix looks like it changed nothing and a regression goes unnoticed. Delete first, or read the path the tool prints.
@@ -640,11 +640,11 @@ Read `resume.md` and check (all must pass):
 4. **No LaTeX artifacts:** no `\&`, `\%`, `\$`, stray `{` or `}`, `\textbf`, `\hfill`, etc. anywhere in the MD.
 5. **Page count: HARD BLOCK.** Budget is `--pages N`, default 1. Exceeding it always blocks. Parse the `Output written on ... (N pages` line from `resume.log`. That is the only method verified to work: `pdfinfo` is often not installed, and the `--md` exporter emits no form-feed characters, so a form-feed count reports 1 page for any document and would let a 3-page resume through. If `N` exceeds the budget → **DO NOT proceed to scoring.** Recompile after one of: tighten `\rsection` `\vspace` 4pt → 2pt, tighten `\setlist` `topsep`/`itemsep` to 0pt, cut the lowest-relevance project, drop a low-value bullet, or shorten a bullet enough to lose a whole wrapped line. **Do not touch the margin** — 0.7in is the floor (§2c), and every bundled template already sits on it. Never skip this check — an overflow page makes the resume look amateur regardless of score.
 
-6. **No collapsed word boundaries.** `grep -oE '[A-Za-z][A-Za-z,.-]{25,}' $OUTDIR/resume.md` must return nothing. A hit means a justified line was compressed until the extractor lost the spaces, so a whole phrase reaches the parser as one token. Fix by adding the §5 word-boundary block to the template, not by rewording. Re-extract (with the `rm -f`) and re-check.
+6. **No collapsed word boundaries.** `grep -oE '[A-Za-z][A-Za-z,.-]{25,}' "$OUTDIR/resume.md"` must return nothing. A hit means a justified line was compressed until the extractor lost the spaces, so a whole phrase reaches the parser as one token. Fix by adding the §5 word-boundary block to the template, not by rewording. Re-extract (with the `rm -f`) and re-check.
 
-7. **No hyphen-split words.** `grep -nE '[A-Za-z]-$' $OUTDIR/resume.md` must return nothing — a trailing hyphen is a word TeX broke across a line, and it reaches the parser hyphenated. Fix with the two `\hyphenpenalty` lines from §5, not by rewording. Note that a mid-line `state-of-the-art` or `plug-and-play` is a genuine compound and not a hit; only a hyphen at end of line is.
+7. **No hyphen-split words.** `grep -nE '[A-Za-z]-$' "$OUTDIR/resume.md"` must return nothing — a trailing hyphen is a word TeX broke across a line, and it reaches the parser hyphenated. Fix with the two `\hyphenpenalty` lines from §5, not by rewording. Note that a mid-line `state-of-the-art` or `plug-and-play` is a genuine compound and not a hit; only a hyphen at end of line is.
 
-8. **Summary within budget.** `grep -oE 'SUMMARY-LINES: [0-9]+' $OUTDIR/resume.log` must report **4 or fewer**. Over budget → cut the least JD-relevant clause from the summary and recompile. If the line is absent, the summary was not wrapped in `\rsummary{...}` — wrap it (§4 Summary rules) and recompile; do not skip the check.
+8. **Summary within budget.** `grep -oE 'SUMMARY-LINES: [0-9]+' "$OUTDIR/resume.log"` must report **4 or fewer**. Over budget → cut the least JD-relevant clause from the summary and recompile. If the line is absent, the summary was not wrapped in `\rsummary{...}` — wrap it (§4 Summary rules) and recompile; do not skip the check.
 
 Fail → identify which check failed, edit `resume.tex` to fix:
 - Missing section → add it (only if profile has content; skip empty sections per §4).
@@ -665,13 +665,13 @@ Then recompile → re-verify. No iteration cap on structural fixes.
 
 ### 7a. Inspection (read the report directly)
 ```
-"$ENGINE/tool" $OUTDIR/resume.pdf --jd <jd_tmp>.txt
+"$ENGINE/tool" "$OUTDIR/resume.pdf" --jd "<jd_tmp>.txt"
 ```
 Agent reads the printed report directly: overall, ATS risks, missing keywords, weak requirements, writing advice. No piping, no `jq`, no Python parser. Default for inspection / debugging passes.
 
 ### 7b. Accept-gate evaluation (parse JSON)
 ```
-"$ENGINE/tool" $OUTDIR/resume.pdf --jd <jd_tmp>.txt --json > $OUTDIR/score.json
+"$ENGINE/tool" "$OUTDIR/resume.pdf" --jd "<jd_tmp>.txt" --json > "$OUTDIR/score.json"
 ```
 ONLY when the agent must check the accept gate (§8) programmatically. Persist `score.json` to the output folder.
 

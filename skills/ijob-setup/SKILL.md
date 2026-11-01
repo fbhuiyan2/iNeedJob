@@ -170,12 +170,21 @@ Or run Apple's Rosetta-emulated arm64 build (not recommended).
 
 ## 5. Verify
 
-```
+Use the platform-specific binary names:
+
+```bash
+# macOS and Linux
 "$ENGINE/tool" --version
 "$ENGINE/tectonic" --version
 ```
 
-Both must print a version string and exit 0. Failure → halt, print which one failed, leave repo in a clean state (delete the broken binary).
+```pwsh
+# Windows, from the repo root ($ENGINE is a bash variable; pwsh never sees it)
+& ./tool.exe --version
+& ./tectonic.exe --version
+```
+
+Both must print a version string and exit 0. On failure, halt, report which binary failed, and delete only the broken binary.
 
 ## 6. Gitignore
 

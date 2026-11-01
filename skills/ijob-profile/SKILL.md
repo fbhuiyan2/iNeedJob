@@ -43,11 +43,15 @@ In this mode `profile.json` is generated, never hand-edited. Adding a fact means
 
 If a user wants derived mode but has no config yet, point them at `$ENGINE/inputs/profile-config.example.md` — it is the template and specifies the four sections. It can sit beside the profile, or anywhere `paths.yaml` points.
 
-**Standalone mode** — no config found. Follow the appendix below: parse a CV from `inputs/`, fetch GitHub repos, ask where ambiguous, write the profile. Schema reference is `$ENGINE/inputs/profile.example.json`.
+**Standalone mode.** No config was found. Follow the appendix below. Parse one or more CVs or résumés from `$ENGINE/inputs/`, fetch GitHub repositories, ask where the sources are ambiguous, and write the profile. The schema reference is `$ENGINE/inputs/profile.example.json`.
 
-The profile lands at `$ENGINE/inputs/profile.json`. `inputs/` is gitignored, so it stays private — but that also means **it does not travel with a clone.** Mention this once, after writing, without labouring it:
+The profile is written to the resolved `$PROFILE` path. The default path, `$ENGINE/inputs/profile.json`, is gitignored and does not travel with a clone.
 
-> Your profile is at `<path>`. `inputs/` is gitignored, so it stays on this machine — fine for one computer, but it will not follow you to another. To keep it somewhere that syncs, put it in a repo of your own and point `profile:` in `inputs/paths.yaml` at it. And if you already keep a CV and notes you would rather not retype, add a `profile-config.md` describing that record and re-run — `/ijob-profile` switches to derived mode and regenerates the profile from it instead. Templates: `$ENGINE/inputs/paths.example.yaml`, `$ENGINE/inputs/profile-config.example.md`.
+**External path — warn before the first write.** If `$PROFILE` is anywhere else, run `git -C "$(dirname "$PROFILE")" remote -v` *before* writing. If it is inside a repository with a remote, name only the host and repository (`github.com/<owner>/<repo>`) — never print the full URL, which can carry a token (`https://<token>@github.com/...`) — and ask the user to confirm that repository is private before writing anything. This is a warning, not a guarantee: you cannot see a repository's visibility, and one with no remote today can gain one tomorrow. Ask once per profile path, not on every run.
+
+Mention this once after writing:
+
+> Your profile is at `<path>`. If this is the default `inputs/` path, it is gitignored and stays on this machine. To sync it across machines, put it in a private repository or synced directory and point `profile:` in `inputs/paths.yaml` to it. If you already keep CVs, résumés, and notes that you would rather not retype, add a `profile-config.md` describing that record and rerun. `/ijob-profile` will switch to derived mode and regenerate the profile from the record. Templates are available at `$ENGINE/inputs/paths.example.yaml` and `$ENGINE/inputs/profile-config.example.md`.
 
 Say it once. Do not repeat it on later runs in the same session.
 
@@ -313,24 +317,21 @@ Follow this only in standalone mode (§2). Derived mode follows the record's `pr
 - **Cold start** — `$PROFILE` does not exist. Build from scratch.
 - **Update** — `$PROFILE` exists. Additive merge; never silent-delete.
 
-`$PROFILE` is whatever §1 resolved — `paths.yaml`, then `$RESUME_TAILOR_PROFILE`,
-then the default `inputs/profile.json`. Decide with `test -f "$PROFILE"`. Never
-`test -f profile.json`: that tests the working directory and the old pre-`inputs/`
-location, so it reports cold start for a user who already has a profile, and the
-build then overwrites it.
+`$PROFILE` is whatever §1 resolved. The precedence is `$RESUME_TAILOR_PROFILE`, then a non-empty `profile:` value in `$ENGINE/inputs/paths.yaml`, then `$ENGINE/inputs/profile.json`. Decide with `test -f "$PROFILE"`. Never use `test -f profile.json`. That tests the working directory and the old pre-`inputs/` location, so it can report a cold start for a user who already has a profile and then overwrite it.
 
-## Inputs (all optional, all in `inputs/`, all gitignored)
+## Inputs
 
-A CV already in Markdown or plain text (`cv.md`, `cv.txt`) is read directly —
-skip §2's conversion. Only PDF and DOCX need `tool --md`.
+All inputs are optional. The default input directory is `$ENGINE/inputs/`, which is gitignored. Accept multiple CVs and résumés in PDF, DOCX, Markdown, or plain-text format. Read Markdown and plain text directly. Only PDF and DOCX files need `tool --md` conversion.
 
 | File | Purpose |
 |---|---|
-| `inputs/cv.pdf` or `inputs/cv.docx` | Existing résumé to parse. |
-| `inputs/github_username.txt` | One line, just the username. |
-| `inputs/notes.md` | Freeform context — anything the CV doesn't say. |
+| `$ENGINE/inputs/cv*` or `$ENGINE/inputs/resume*` ending `.pdf`, `.docx`, `.md` or `.txt` | One or more existing CVs or résumés to parse. |
+| `$ENGINE/inputs/github_username.txt` | One line containing the username. |
+| `$ENGINE/inputs/notes.md` | Freeform context missing from the other sources. |
 
-User drops files here. None mandatory, but at least one strongly recommended for cold start.
+Those globs match files directly in `inputs/`, never directories, and only the four extensions above — a `cv.tex`, `resume.json` or `cv-old.bak` is not a source. If one is there, mention it once and let the user say whether to read it. **`inputs/resume-examples/` and `inputs/cover-letter-examples/` are not sources**: they are style references, `/ijob-tailor` §4a forbids taking facts from them, and a glob that descends into them would turn an old résumé's wording into profile facts. Skip `*.extracted.md` too — those are leftovers from earlier versions of this step, not something the user wrote. A `cv.md` sitting beside a `cv.pdf` may be one of those leftovers; ask once which is current.
+
+The user places source files here. None is mandatory, but at least one source is strongly recommended for a cold start. When multiple documents overlap, merge corroborating information and ask about genuine conflicts. Do not silently choose between conflicting dates, titles, or claims.
 
 ---
 
@@ -341,17 +342,23 @@ User drops files here. None mandatory, but at least one strongly recommended for
 - Cold start → start with empty schema (see `inputs/profile.example.json` for shape).
 - Update → load `$PROFILE`. Keep every existing field unless explicit user instruction to remove. Already-decided per-repo include/exclude flags carry over so the agent doesn't re-ask.
 
-### 2. Parse CV if present
+### 2. Parse each CV or résumé
+
+Process every source document separately. Convert each PDF or DOCX into a scratch directory **outside `inputs/`**, named after the whole source filename, extension included:
 
 ```
-rm -f inputs/cv.md
-"$ENGINE/tool" inputs/cv.pdf --md inputs/cv.md
+EXTRACT="${TMPDIR:-/tmp}/ijob-profile-extract-$(printf %s "$ENGINE" | cksum | cut -d' ' -f1)"
+rm -rf "$EXTRACT" && mkdir -m 700 "$EXTRACT"     # once, at the start of the run
+"$ENGINE/tool" "$ENGINE/inputs/cv-primary.pdf" --md "$EXTRACT/cv-primary.pdf.md"
 ```
 
-The `rm -f` is required, not tidiness: `--md` refuses to overwrite and writes
-`inputs/cv-2.md` instead, so a re-run silently parses the stale first extraction.
+- **Outside `inputs/`** because an extraction left there matches the `cv*` glob on the next run and is read as a source of its own. Delete or replace the PDF and its old extraction survives, quietly restoring facts the user removed.
+- **Wiped and recreated, not `mkdir -p`.** That clears anything a previous run left, and it is the only way the `700` takes effect — `mkdir -p -m` leaves an existing directory's permissions as they were. It also makes `--md`'s refusal to overwrite moot, since nothing is there to collide with.
+- **Named per clone, not `mktemp -d`.** A design choice, not a limitation: a random path would work if it were written down and carried from command to command, but every shell call starts fresh, and a deterministic name is one any later command can rebuild with no extra state to keep. The checksum of `$ENGINE` gives every clone its own folder, so a test clone running beside the real one cannot wipe its files. Two runs on the *same* clone would already be fighting over one `profile.json`; do not start a second.
+- **Extension in the name** because `cv.pdf` and `cv.docx` would both become `cv.md`, and the second conversion would quietly land in `cv-2.md`.
+- **Removed at the end** — see §8. This is the user's whole career in plain text; it should not outlive the run.
 
-Read `inputs/cv.md`. Extract:
+Read every source and extract:
 - `identity` (name, location, contact links).
 - `summary_seeds` — raw factual statements, NOT a pre-written summary.
 - `skills` (languages, frameworks, tools, domains).
@@ -377,7 +384,7 @@ Skip forks (`fork: true`) by default. For each remaining repo:
 
 ### 4. Read notes.md
 
-Freeform. Treat as ground truth for anything CV missed. User's word > parser's guess.
+Read `$ENGINE/inputs/notes.md` if present. Treat the user's notes as authoritative when an extracted document omitted or misparsed a fact. If the notes conflict with a clear source document, ask rather than guessing.
 
 ### 4b. References
 
@@ -405,6 +412,8 @@ Every `skills[].*`, `experience[].bullets[]`, `projects[].bullets[]` gets a `tag
 
 Pretty-printed JSON, 2-space indent, sorted top-level keys per schema order (see `inputs/profile.example.json`, which now includes `references[]`).
 
+Then `rm -rf "$EXTRACT"` (rebuild it exactly as §2 does) — the extractions are not needed once the profile is written. Do it on a halt too.
+
 Set `meta.last_updated` to current ISO8601. Set `meta.source` to `"cv"`, `"github"`, `"manual"`, or comma-joined for hybrids.
 
 ---
@@ -413,14 +422,14 @@ Set `meta.last_updated` to current ISO8601. Set `meta.source` to `"cv"`, `"githu
 
 - **No fabrication.** If CV unclear → ask, don't guess. If GitHub repo description is empty, leave it empty, don't invent.
 - **No silent delete.** Update mode keeps anything not explicitly removed. Even unused tags stay.
-- **Profile is local.** `$PROFILE` is gitignored. Never logged outside the repo. Never sent anywhere except as context the LLM sees in this session.
+- **Protect personal data.** The default `$ENGINE/inputs/profile.json` path is gitignored. For an external `$PROFILE`, run the remote warning in main §2 (*Pick the mode*), before the first write. Never log the profile or send it anywhere except as context for the active LLM session.
 
 ## Failure modes
 
-- **Tool can't parse CV** → halt with: "Open `inputs/cv.md` (if exists) or `inputs/cv.<ext>`, manually paste a cleaned plain-text version to `inputs/cv.md`, re-run."
-- **GitHub rate-limited** → halt, print reset time, suggest re-run later.
-- **Network down** → cold-start still proceeds with CV + notes only; mark `meta.source` accordingly.
-- **No inputs at all** → halt with: "Drop a CV in `inputs/cv.pdf` and/or a GitHub username in `inputs/github_username.txt`, then re-run."
+- **Tool cannot parse a document** → ask the user to save a cleaned Markdown or plain-text copy under `$ENGINE/inputs/`, then rerun. Continue with other readable source documents if they are sufficient.
+- **GitHub rate-limited** → halt, print the reset time, and suggest rerunning later.
+- **Network unavailable** → a cold start can continue with local CVs, résumés, and notes. Record the available sources in `meta.source`.
+- **No inputs at all** → halt with: "Add one or more CVs or résumés under `$ENGINE/inputs/`, add `$ENGINE/inputs/notes.md`, and/or provide a GitHub username, then rerun."
 
 ## Schema reference
 

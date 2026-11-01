@@ -33,7 +33,7 @@ Five moving parts, deliberately kept separate:
 
 | Part | Lives in | Why there |
 |---|---|---|
-| **Engine** — playbooks, templates, references, binaries | this repo | Public. Shareable. No personal data ever. |
+| **Engine** — playbooks, templates, references, binaries | this repo | Public and shareable. Personal data may exist only under gitignored `inputs/`; it must never be tracked or committed. |
 | **Slash commands** — all five | this repo's `skills/`, installed to `~/.claude/skills/` and every other harness directory found | Generic logic, no personal data. Read by Claude Code AND OpenCode, from any directory. |
 | **Profile** — your career record + generated `profile.json` | `inputs/profile.json`, gitignored. Optionally a **private repo of your own**, pointed at by `profile:` in `inputs/paths.yaml` | Data only, no logic. Never in the public engine repo. |
 | **Corpus** — every posting `/ijob-scrape` has ever seen | `inputs/scrape/jobs.db`, gitignored | Months of quota-bought text. Local, private, never committed. |
@@ -60,14 +60,14 @@ So the real logic goes in a **skill** — written once, both tools see it. OpenC
 ## Step 1 — clone the engine
 
 ```sh
-git clone https://github.com/<you>/resume-tailor-agent ~/soft/resume-tailor-agent
+git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
 ```
 
 Any path works — `install.sh` bakes the absolute path into the skills. Re-run the installer if you later move the repo.
 
 ## Step 2 — fetch the binaries
 
-Per machine, since both are gitignored. From an agent session, run `/ijob-setup`, or do it by hand — Linux x86_64 shown, see [`skills/ijob-setup/SKILL.md`](../skills/ijob-setup/SKILL.md) for other platforms:
+Per machine, since both are gitignored. On a fresh clone, read and follow [`skills/ijob-setup/SKILL.md`](../skills/ijob-setup/SKILL.md) directly. The `/ijob-setup` alias becomes available after Step 3 and a harness restart. The manual example below is for Linux x86_64 only:
 
 ```sh
 cd ~/soft/resume-tailor-agent
@@ -163,7 +163,7 @@ export RESUME_TAILOR_OUT="$HOME/job-applications"          # fixed output root
 
 ## Step 5b — optional: style examples and path overrides
 
-Drop previous resumes into `inputs/resume-examples/` and previous letters into `inputs/cover-letter-examples/`. PDFs work directly. Each tailoring run reads them for **style** — tone, section naming, bullet rhythm, level of detail — never for facts. Both directories ship empty and their contents are gitignored.
+Drop one or more previous résumés into `inputs/resume-examples/` and previous letters into `inputs/cover-letter-examples/`. PDF, DOCX, TXT, and Markdown files are supported. Each tailoring run reads them for style, including tone, section naming, bullet structure, organization, and level of detail. They are never treated as sources of facts. Both directories are initially empty, and their contents are gitignored.
 
 If you need to point the engine somewhere unusual, copy the config and edit it:
 
@@ -175,9 +175,9 @@ Every key is optional; anything omitted falls back to discovery. The file is git
 
 ## Step 6 — build your profile
 
-Run `/ijob-profile`. Cold start parses a CV and scrapes GitHub per [`skills/ijob-profile/SKILL.md`](../skills/ijob-profile/SKILL.md). If you already keep a structured career record as its own skill, derive `profile.json` from that instead — the record stays the source of truth and `profile.json` becomes a regenerable index.
+Run `/ijob-profile`. A cold start can parse one or more CVs or résumés, read notes, and collect public GitHub data according to [`skills/ijob-profile/SKILL.md`](../skills/ijob-profile/SKILL.md). If you already maintain a structured career record, derive `profile.json` from that record instead. The record remains the source of truth, and `profile.json` becomes a regenerable index.
 
-Write it to the profile path, **not** into this repo.
+Write it to the resolved profile path. The default is the gitignored `$ENGINE/inputs/profile.json`. An external private repository or synced directory is optional.
 
 `/ijob-profile` then offers to set your job-search defaults — the titles you
 want, the places, and anything to rule out — and writes them to
@@ -222,7 +222,7 @@ from turning them on for you.
 ## Setting up a second machine
 
 ```sh
-git clone https://github.com/<you>/resume-tailor-agent ~/soft/resume-tailor-agent
+git clone https://github.com/fbhuiyan2/resume-tailor-agent ~/soft/resume-tailor-agent
 git clone git@github.com:<you>/<your-private-profile-repo> ~/.claude/skills/<your-profile-skill>
 bash ~/soft/resume-tailor-agent/skills/install.sh
 
